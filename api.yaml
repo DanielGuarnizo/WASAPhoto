@@ -1,0 +1,647 @@
+openapi: 3.0.0
+info:
+  title: WASAphoto
+  description: |-
+    Project to try to get a 18 cum laude 
+  version: 0.0.1
+
+components:   
+  schemas:
+    Identifier:
+      title: Identifier of an object in the app
+      description: |-
+        identifier of an object that an user post in to anther user e.g, likes and comments. in this way we are able to identifier the user who do the action and the id of this object 
+      type: object
+      properties:
+        # identifier of the comment/like in a post 
+        id:
+          type: integer 
+          example: 1
+          readOnly: true 
+        
+        # id of the user who does the comment/like, this will help us to identify from who is the comment/like 
+        userId: 
+          type: integer
+          example: 1993527
+          readOnly: true
+      
+    Comment:
+      title: Comment of a post
+      description: |-
+        comment provided by and user to an images of another user
+      type: object 
+      properties:
+        identifier:
+          $ref: "#/components/schemas/Identifier"
+        # the comment per se
+        body:
+          type: string
+    
+    Like:
+      title: Like of a post
+      description: |-
+        like from a user to a photo/post of another user 
+      type: object
+      properties:
+        identifier:
+          $ref: "#/components/schemas/Identifier"
+
+    Image:
+      title: image of a post 
+      description: |-
+        An images regargly an user, such image will be the main component of an user post 
+      type: object 
+      properties:
+        image:
+          type: string
+          format: base64
+          
+    Post:
+      title: Post of an user on his profile 
+      description: |- 
+        a post make from an user that will be posted in his profile, this post contains an image which could have eventually likes and comment from others user 
+      type: object
+      properties:
+      
+        # identifier that will hepl us to identify the post of a user 
+        id: 
+          type: integer
+          example: 1
+          readOnly: true 
+          
+        # this specify the date in which the post was done and the time 
+        uploaded:
+          type: string
+          format: data-time
+        
+        # the main object of this app are the image
+        image:
+          $ref: "#/components/schemas/Image"
+        
+        # collecttion of possible comments the post could have (i am not sure if thsi part have to be in the properties)
+        comments:
+          type: array
+          items:  
+            $ref: "#/components/schemas/Comment"
+            
+        # number of comments the post has 
+        numberOfComments:
+          type: integer
+        
+        # collection of possible likes the post could have (i am not sure if thsi part have to be in the properties)
+        likes:
+          type: array
+          items: 
+            $ref: "#/components/schemas/Like"
+            
+        # number of likes the post could have
+        numberOfLikes:
+          type: integer
+        
+    Stream:
+      title: stream of a user
+      description: |-
+        the stream will show the post of all the following person of the user 
+      type: object
+      properties:
+        # this wil be a collection of photos/post the user will see of all the others profiles his following 
+        photos:
+          type: array 
+          items:
+            $ref: "#/components/schemas/Post"
+            
+    Profile:
+      title: Profile of an user on the app 
+      description: |-
+        the profile for each user will contain information related to it, such as how many photos has been upload until now, how many follower and another user information
+      type: object 
+      properties: 
+        id:
+          type: integer
+          example: 1993238
+          readOnly: true
+          
+        # here will be collection of all the post the user did until now 
+        username:
+          type: string
+          
+        photos:
+          type: array 
+          items:
+            $ref: "#/components/schemas/Post"
+            
+        # indicates how many post/photos the user has in it's own profile
+        numberOfPost:
+          type: integer
+          
+        # number of follower indicates how many people follow this profile 
+        userFollowers:
+          type: integer
+          example: 2 # so this indicates that only two persons follow this user
+        
+        # number of other profiles the user follow 
+        userFollowing:
+          type: integer
+          example: 1985 
+        
+paths:
+  # DO LOGING
+  /session: 
+    post:
+      tags: ["login"]
+      summary: Logs in the user 
+      description: |-
+        If the user does not exist, it will be created,
+        and an identifier is returned.
+        If the user exists, the user identifier is returned.
+      operationId: doLogin 
+      requestBody:
+        description: User details
+        content:
+          application/json: 
+            schema:
+              type: object 
+              properties:
+                name:
+                  type: string 
+                  example: Maria 
+                  pattern: 'ˆ.*?$'
+                  minLength: 3 
+                  maxLength: 16
+        required: true 
+      responses:
+        '201':
+          description: User log-in action successful 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  identifier:
+                    # change here if you decide to use an integer # or any other type of identifier
+                    type: string
+                    example: "abcdef012345"
+  
+  # LIKE PHOTO
+  # here we want to add a like to a post 
+  /likes/:
+    post:
+      operationID: AddLike
+      summary: Add a like to a post
+      description: |- 
+        an user is trying to add a like to a post of another user 
+      
+          
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Like"}
+      response: 
+        "201":
+          # in this case by created we mean that we add a like to the array of likes of a post 
+          description: Like successfully created 
+          # we need a response body given that we are creating a new resources
+          content:
+            application/json:
+              schema: { $ref:"#components/schemas/Like"} # means that the responses of the request is in a json format and indicates how it's organizes, what it has ecc...
+              
+        '400':
+            description: Bad request. Invalid user data.
+            
+        '500':
+          description: Internal server error.
+  
+  # UNLIKE PHOTO
+  # here we want to remove a like that we previously added to a post 
+  /likes/{likeid}:
+    delete: 
+      operationID: RemoveLike
+      summary: Remove a like from a post 
+      description: |- 
+        an user want to remove e like that previously add to a post of another user 
+      parameters:
+        - name: likeid
+          in: path
+          type: integer
+          required: true 
+        
+      responses:
+        # use status code 204 instead of 200, because with 200 there is response body with additional information which can be misleading in the context of a DELETE operation. with 204 indicates that the deletion operation was successful
+        
+        "204":
+          description: |-
+            specify if the like of an user post was correctly deletated 
+            
+        "404":
+          description: Resource not found 
+          
+        "500":
+          description: Internal server error 
+  
+  # COMMENT PHOTO        
+  #here we want to add a comment to a post (it could be to the self post or to post of another user)
+  /comments/:
+    post:
+      operationID: AddComment
+      summary: add a comment to a post
+      description: |- 
+        an user want to add a comment to a post of him self of another user post 
+          
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Comment"}
+        responses:
+          "201":
+            description: Comment successfully created 
+            # we need a response body given that we are creating a new resources
+            content:
+              application/json:
+                schema: { $ref: "#/components/schemas/Comment"}
+                
+          '400':
+            description: Bad request. Invalid user data.
+          
+          '500':
+            description: Internal server error.
+  
+  # UNCOMMENT PHOTO
+  # here we want to remove a comment but with a simple constraint that only the "owner" of the comment can delete it's own comment  
+  /comments/{commentid}:
+    delete:
+      operationID: RemoveComment
+      summary: Remove a comment from a post
+      description: |-
+        An user want to remove a comment done in a post 
+      parameters:
+        - name: commentid
+          in: path
+          type: integer
+          required: true 
+          
+      responses:
+        "204":
+          description: |- 
+            specify if the comment in the user post was correctly deletated 
+            
+        "404":
+          description: Resource not found
+          
+        "500":
+          description: Internal server error 
+          
+  # SET MY USER NAME
+  # an user want to change it's username
+  /users/{userid}:
+    # using the patch method we are gonna to apply some modification to the resourrces without changing the complete resource 
+    patch:
+      operationID: ChangeUsername
+      summary: an  user want to change the username
+      description: an user want to change the username of it's own profile 
+      parameters:
+        - name: userid
+          in: path
+          type: integer
+          required: true
+      requestBody:
+        description: partial update user information
+        content:
+          application/json:
+            schema: { $ref:"#/components/schemas/Profile"}
+      responses:
+        # he 200 OK status code indicates that the PATCH operation was successful. The server has applied the partial modifications to the resource, and the updated representation of the resource is included in the response body.
+        "200":
+          description: user update name was successfully 
+          content:  
+            application/json:
+              shema: { $ref:"#/components/schemas/Profile"}
+              
+        "404":
+          description: Resource not found
+          
+        "500":
+          description: Internal server error 
+    
+  # UPLOAD PHOTO 
+  # the user want to upload a post/photo to his profile 
+  /users/{userid}/posts:
+    post:
+      operationID: UploadPost
+      summary: upload post to profile
+      description: |-
+        user want to upload a new post to it's own profile 
+      parameters:
+        - name: userid
+          in: path
+          type: integer
+          required: true
+          
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref:"#/components/schemas/Post"}
+            
+      responses:
+        "201":
+          description: Post eas created successfully
+          content:
+            application/json:
+              schema: { $ref:"#/components/schemas/Post"}
+        
+        "404":
+          description: Resource not found
+          
+        "500":
+          description: Internal server error 
+          
+          
+  # DELETE PHOTO  
+  # the user want to remove a post/photo from his profile Cascading Deletion In this approach, when a post is deleted, all associated likes and comments are automatically deleted as well. This is known as cascading deletion, where the deletion of a parent resource triggers the deletion of its dependent resources.
+  /users/{userid}/posts/{postid}:
+    delete:
+      operationID: Removepost
+      summary: Remove post from profile
+      description: |-
+        user want to remove post from his own profile 
+      
+      parameters:
+        - name: userid
+          in: path
+          type: integer
+          required: true
+          
+        - name: postid
+          in: path
+          type: integer
+          required: true
+      
+      responses:
+        "204":
+          description: |- 
+            specify if the post in the user profile was correctly deletated
+            
+        "404":
+          description: Resource not found
+          
+        "500":
+          description: Internal server error 
+          
+  # FOLLOW USER        
+  # user want to  follow an user 
+  /users/{userid}/following:
+    post:
+      operationID: FollowAnUser
+      summary: Start follow another user
+      description: |-
+        An user wants to start to follow another user 
+      
+      parameters:
+        - name: userid
+          in: path
+          description: ID of the user who want to follow another user
+          type: interger 
+          required: true 
+      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                
+                followingID:
+                  type: integer
+                  description: |-
+                    ID of the user that we want to follow, so ID of the user to be followed.
+                  example: 123124
+                  
+                followingUsername:
+                  type: string
+                  description: Username of the user to be followed.
+                  example: 'el_jefe'
+      
+      responses:
+        "201":
+          description: user followed successfully 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                
+                  followingID:
+                    type: integer
+                    description: |-
+                      ID of the user that we want to follow, so ID of the user to be followed.
+                    example: 123124
+                  
+                  followingUsername:
+                    type: string
+                    description: Username of the user to be followed.
+                    example: 'el_jefe'
+        "404":
+          description: Resource not found
+        
+        "500":
+          description: Internal server error 
+        
+  # UNFOLLOW USER
+  # user want ot unfollow and user that start follow early
+  /users/{userid}/following/{followedid}:
+    delete:
+      operationID: UnfollowUser
+      summary: user unfollow an user
+      description: |-
+        User want to unfollow  another user that follow in past
+      paramters:
+        - name: userid
+          in: path
+          type: integer
+          required: true
+        
+        - name: followedid
+          in: path
+          type: integer
+          required: true
+          
+      responses:
+        "204":
+          description: |- 
+            specify if the followed user is not more in the collection of folliwing users 
+            
+        "404":
+          description: Resource not found
+          
+        "500":
+          description: Internal server error 
+          
+  # BAND USER
+  # here we create a collection of muted user for a particular userid    
+  /users/{userid}/muted/:    
+  # /users/{userid}/muted/{muteduserid}:
+    post:
+      summary: Mute a user
+      description: |-
+        Mutes another user, preventing them from interacting with the specified user.
+      parameters:
+        - name: userid
+          in: path
+          description: ID of the user who wants to mute another user.
+          required: true
+          schema:
+            type: integer
+            
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mutedUserId:
+                  type: integer
+                  description: ID of the user to be muted.
+                  example: 987654
+      responses:
+        '201':
+          description: User muted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                mutedUserId:
+                  type: integer
+                  description: ID of the user to be muted.
+                  example: 987654
+        '404':
+          description: User not found.
+        '500':
+          description: Internal server error.
+
+  # UNBAND USER
+  # here we want to unmute an user from the muted collection 
+  /users/{userid}/muted/{mutedUserid}:
+    delete:
+      summary: Unmute a user
+      description: |-
+        Allows a user to unmute another user, allowing them to interact again.
+      parameters:
+        - name: userid
+          in: path
+          description: ID of the user who wants to unmute another user.
+          required: true
+          schema:
+            type: integer
+        - name: mutedUserid
+          in: path
+          description: ID of the user to be unmuted.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: User unmuted successfully.
+        '404':
+          description: User not found or not muted.
+        '500':
+          description: Internal server error.  
+          
+  # GET USER PROFILE 
+  # we use the path , without including the query parameters irectly in the path, it should be done when an user makes a request to search an user /users/search?username=desiredUsername
+  /users/{userid}/profile:
+    get:
+      operationID: SearchUser
+      summary: user search another user 
+      description: |-
+        an user search another user by name and try to get a possible resoult that match with his request 
+      parameter:
+        - name: userid
+          in: path
+          descrition: user id who is looking for another user 
+          type: integer
+          required: true
+          
+        - name: username
+          in: query
+          description: username to search for 
+          type: string
+          required: true
+          
+      responses:
+        # we use 200 instead of 201 because we are not creating a resource and we are just safistying a request
+        "200":
+          description: User profile found successfully 
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref:"#/components/schemas/Profile"}
+        
+        '404':
+          description: No user profiles found for the provided username.
+        '500':
+          description: Internal server error.
+          
+  # GET MY STREAM 
+  /users/{userid}/stream:
+    get:
+      operationID: GetStream
+      summary: Get the stream of an specific user
+      description: |-
+        an user wanna get the stream, so where all the post of the following users the user follow are posted.
+      parameters:
+        - name: userid
+          in: path
+          type: integer
+          required: true
+      
+      responses:
+        "200":
+          description: user stream with all the post of the followed users 
+          content:
+            application/json:
+              schema: { $ref:"#/components/schemas/Stream"}
+        '404':
+          description: No user profiles found for the provided username.
+        '500':
+          description: Internal server error.
+        
+                
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+          
+              
+      
+  
+  
+        
+        
+      
+            
+            
+            
+          
+      
+            
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+  
