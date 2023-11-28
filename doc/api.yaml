@@ -186,7 +186,7 @@ paths:
   # here we want to add a like to a post 
   /likes/:
     post:
-      operationID: AddLike
+      operationId: AddLike
       summary: Add a like to a post
       description: |- 
         an user is trying to add a like to a post of another user 
@@ -196,7 +196,7 @@ paths:
         content:
           application/json:
             schema: { $ref: "#/components/schemas/Like"}
-      response: 
+      responses: 
         "201":
           # in this case by created we mean that we add a like to the array of likes of a post 
           description: Like successfully created 
@@ -215,14 +215,15 @@ paths:
   # here we want to remove a like that we previously added to a post 
   /likes/{likeid}:
     delete: 
-      operationID: RemoveLike
+      operationId: RemoveLike
       summary: Remove a like from a post 
       description: |- 
         an user want to remove e like that previously add to a post of another user 
       parameters:
         - name: likeid
           in: path
-          type: integer
+          schema:
+           type: integer
           required: true 
         
       responses:
@@ -242,7 +243,7 @@ paths:
   #here we want to add a comment to a post (it could be to the self post or to post of another user)
   /comments/:
     post:
-      operationID: AddComment
+      operationId: AddComment
       summary: add a comment to a post
       description: |- 
         an user want to add a comment to a post of him self of another user post 
@@ -251,32 +252,33 @@ paths:
         content:
           application/json:
             schema: { $ref: "#/components/schemas/Comment"}
-        responses:
-          "201":
-            description: Comment successfully created 
-            # we need a response body given that we are creating a new resources
-            content:
-              application/json:
-                schema: { $ref: "#/components/schemas/Comment"}
-                
-          '400':
-            description: Bad request. Invalid user data.
-          
-          '500':
-            description: Internal server error.
+      responses:
+        "201":
+          description: Comment successfully created 
+          # we need a response body given that we are creating a new resources
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Comment"}
+              
+        '400':
+          description: Bad request. Invalid user data.
+        
+        '500':
+          description: Internal server error.
   
   # UNCOMMENT PHOTO
   # here we want to remove a comment but with a simple constraint that only the "owner" of the comment can delete it's own comment  
   /comments/{commentid}:
     delete:
-      operationID: RemoveComment
+      operationId: RemoveComment
       summary: Remove a comment from a post
       description: |-
         An user want to remove a comment done in a post 
       parameters:
         - name: commentid
           in: path
-          type: integer
+          schema:
+            type: integer
           required: true 
           
       responses:
@@ -295,13 +297,14 @@ paths:
   /users/{userid}:
     # using the patch method we are gonna to apply some modification to the resourrces without changing the complete resource 
     patch:
-      operationID: ChangeUsername
+      operationId: ChangeUsername
       summary: an  user want to change the username
       description: an user want to change the username of it's own profile 
       parameters:
         - name: userid
           in: path
-          type: integer
+          schema:
+            type: integer
           required: true
       requestBody:
         description: partial update user information
@@ -314,7 +317,7 @@ paths:
           description: user update name was successfully 
           content:  
             application/json:
-              shema: { $ref:"#/components/schemas/Profile"}
+              schema: { $ref:"#/components/schemas/Profile"}
               
         "404":
           description: Resource not found
@@ -326,14 +329,15 @@ paths:
   # the user want to upload a post/photo to his profile 
   /users/{userid}/posts:
     post:
-      operationID: UploadPost
+      operationId: UploadPost
       summary: upload post to profile
       description: |-
         user want to upload a new post to it's own profile 
       parameters:
         - name: userid
           in: path
-          type: integer
+          schema:
+            type: integer
           required: true
           
       requestBody:
@@ -359,7 +363,7 @@ paths:
   # the user want to remove a post/photo from his profile Cascading Deletion In this approach, when a post is deleted, all associated likes and comments are automatically deleted as well. This is known as cascading deletion, where the deletion of a parent resource triggers the deletion of its dependent resources.
   /users/{userid}/posts/{postid}:
     delete:
-      operationID: Removepost
+      operationId: Removepost
       summary: Remove post from profile
       description: |-
         user want to remove post from his own profile 
@@ -367,12 +371,14 @@ paths:
       parameters:
         - name: userid
           in: path
-          type: integer
+          schema:
+            type: integer
           required: true
           
         - name: postid
           in: path
-          type: integer
+          schema:
+            type: integer
           required: true
       
       responses:
@@ -390,7 +396,7 @@ paths:
   # user want to  follow an user 
   /users/{userid}/following:
     post:
-      operationID: FollowAnUser
+      operationId: FollowAnUser
       summary: Start follow another user
       description: |-
         An user wants to start to follow another user 
@@ -399,7 +405,8 @@ paths:
         - name: userid
           in: path
           description: ID of the user who want to follow another user
-          type: interger 
+          schema:
+            type: integer 
           required: true 
       
       requestBody:
@@ -449,19 +456,21 @@ paths:
   # user want ot unfollow and user that start follow early
   /users/{userid}/following/{followedid}:
     delete:
-      operationID: UnfollowUser
+      operationId: UnfollowUser
       summary: user unfollow an user
       description: |-
         User want to unfollow  another user that follow in past
-      paramters:
+      parameters:
         - name: userid
           in: path
-          type: integer
+          schema:
+            type: integer
           required: true
         
         - name: followedid
           in: path
-          type: integer
+          schema:
+            type: integer
           required: true
           
       responses:
@@ -509,10 +518,10 @@ paths:
               schema:
                 type: object
                 properties:
-                mutedUserId:
-                  type: integer
-                  description: ID of the user to be muted.
-                  example: 987654
+                  mutedUserId:
+                    type: integer
+                    description: ID of the user to be muted.
+                    example: 987654
         '404':
           description: User not found.
         '500':
@@ -550,21 +559,23 @@ paths:
   # we use the path , without including the query parameters irectly in the path, it should be done when an user makes a request to search an user /users/search?username=desiredUsername
   /users/{userid}/profile:
     get:
-      operationID: SearchUser
+      operationId: SearchUser
       summary: user search another user 
       description: |-
         an user search another user by name and try to get a possible resoult that match with his request 
-      parameter:
+      parameters:
         - name: userid
           in: path
-          descrition: user id who is looking for another user 
-          type: integer
+          description: user id who is looking for another user 
+          schema:
+            type: integer
           required: true
           
         - name: username
           in: query
           description: username to search for 
-          type: string
+          schema:
+            type: string
           required: true
           
       responses:
@@ -585,14 +596,15 @@ paths:
   # GET MY STREAM 
   /users/{userid}/stream:
     get:
-      operationID: GetStream
+      operationId: GetStream
       summary: Get the stream of an specific user
       description: |-
         an user wanna get the stream, so where all the post of the following users the user follow are posted.
       parameters:
         - name: userid
           in: path
-          type: integer
+          schema:
+            type: integer
           required: true
       
       responses:
