@@ -184,9 +184,10 @@ paths:
   
   # LIKE PHOTO
   # here we want to add a like to a post 
+  # /
   /likes/:
     post:
-      operationId: AddLike
+      operationId: likePhoto
       summary: Add a like to a post
       description: |- 
         an user is trying to add a like to a post of another user 
@@ -215,7 +216,7 @@ paths:
   # here we want to remove a like that we previously added to a post 
   /likes/{likeid}:
     delete: 
-      operationId: RemoveLike
+      operationId: unlikePhoto
       summary: Remove a like from a post 
       description: |- 
         an user want to remove e like that previously add to a post of another user 
@@ -243,7 +244,7 @@ paths:
   #here we want to add a comment to a post (it could be to the self post or to post of another user)
   /comments/:
     post:
-      operationId: AddComment
+      operationId: commentPhoto
       summary: add a comment to a post
       description: |- 
         an user want to add a comment to a post of him self of another user post 
@@ -270,7 +271,7 @@ paths:
   # here we want to remove a comment but with a simple constraint that only the "owner" of the comment can delete it's own comment  
   /comments/{commentid}:
     delete:
-      operationId: RemoveComment
+      operationId: uncommentPhoto
       summary: Remove a comment from a post
       description: |-
         An user want to remove a comment done in a post 
@@ -297,7 +298,7 @@ paths:
   /users/{userid}:
     # using the patch method we are gonna to apply some modification to the resourrces without changing the complete resource 
     patch:
-      operationId: ChangeUsername
+      operationId: setMyUserName
       summary: an  user want to change the username
       description: an user want to change the username of it's own profile 
       parameters:
@@ -329,7 +330,7 @@ paths:
   # the user want to upload a post/photo to his profile 
   /users/{userid}/posts:
     post:
-      operationId: UploadPost
+      operationId: uploadPost
       summary: upload post to profile
       description: |-
         user want to upload a new post to it's own profile 
@@ -363,7 +364,7 @@ paths:
   # the user want to remove a post/photo from his profile Cascading Deletion In this approach, when a post is deleted, all associated likes and comments are automatically deleted as well. This is known as cascading deletion, where the deletion of a parent resource triggers the deletion of its dependent resources.
   /users/{userid}/posts/{postid}:
     delete:
-      operationId: Removepost
+      operationId: deletePhoto
       summary: Remove post from profile
       description: |-
         user want to remove post from his own profile 
@@ -396,7 +397,7 @@ paths:
   # user want to  follow an user 
   /users/{userid}/following:
     post:
-      operationId: FollowAnUser
+      operationId: followUser
       summary: Start follow another user
       description: |-
         An user wants to start to follow another user 
@@ -456,7 +457,7 @@ paths:
   # user want ot unfollow and user that start follow early
   /users/{userid}/following/{followedid}:
     delete:
-      operationId: UnfollowUser
+      operationId: unfollowUser
       summary: user unfollow an user
       description: |-
         User want to unfollow  another user that follow in past
@@ -489,7 +490,7 @@ paths:
   /users/{userid}/muted/:    
   # /users/{userid}/muted/{muteduserid}:
     post:
-      summary: Mute a user
+      summary: bandUser
       description: |-
         Mutes another user, preventing them from interacting with the specified user.
       parameters:
@@ -531,7 +532,7 @@ paths:
   # here we want to unmute an user from the muted collection 
   /users/{userid}/muted/{mutedUserid}:
     delete:
-      summary: Unmute a user
+      summary: unbandUser
       description: |-
         Allows a user to unmute another user, allowing them to interact again.
       parameters:
@@ -559,7 +560,7 @@ paths:
   # we use the path , without including the query parameters irectly in the path, it should be done when an user makes a request to search an user /users/search?username=desiredUsername
   /users/{userid}/profile:
     get:
-      operationId: SearchUser
+      operationId: getUserProfile
       summary: user search another user 
       description: |-
         an user search another user by name and try to get a possible resoult that match with his request 
@@ -596,7 +597,7 @@ paths:
   # GET MY STREAM 
   /users/{userid}/stream:
     get:
-      operationId: GetStream
+      operationId: getMyStream
       summary: Get the stream of an specific user
       description: |-
         an user wanna get the stream, so where all the post of the following users the user follow are posted.
