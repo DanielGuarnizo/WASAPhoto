@@ -37,6 +37,7 @@ components:
         # the comment per se
         body:
           type: string
+          pattern: "^[a-zA-Z0-9]+$"
           minLength: 1
           maxLength: 2204
     
@@ -76,6 +77,7 @@ components:
         uploaded:
           type: string
           format: data-time
+          pattern: ^\d{4}-\d{2}-\d{2}\d{2}:\d{2}:\d{2}$
         
         # the main object of this app are the image
         image:
@@ -86,6 +88,8 @@ components:
           type: array
           items:  
             $ref: "#/components/schemas/Comment"
+          minItems: 0
+          maxItems: 2000
             
         # number of comments the post has 
         numberOfComments:
@@ -96,6 +100,8 @@ components:
           type: array
           items: 
             $ref: "#/components/schemas/Like"
+          minItems: 0
+          maxItems: 2000
             
         # number of likes the post could have
         numberOfLikes:
@@ -112,6 +118,8 @@ components:
           type: array 
           items:
             $ref: "#/components/schemas/Post"
+          minItems: 0
+          maxItems: 2000
             
     Profile:
       title: Profile of an user on the app 
@@ -127,11 +135,14 @@ components:
         # here will be collection of all the post the user did until now 
         username:
           type: string
+          pattern: "^[a-zA-Z0-9]+$"
           
         photos:
           type: array 
           items:
             $ref: "#/components/schemas/Post"
+            minItems: 0 
+            maxItems: 2200
             
         # indicates how many post/photos the user has in it's own profile
         numberOfPost:
@@ -463,6 +474,7 @@ paths:
                   
                 followingUsername:
                   type: string
+                  pattern: "^[a-zA-Z0-9]+$"
                   description: Username of the user to be followed.
                   example: 'el_jefe'
       
@@ -483,6 +495,7 @@ paths:
                   
                   followingUsername:
                     type: string
+                    pattern: "^[a-zA-Z0-9]+$"
                     description: Username of the user to be followed.
                     example: 'el_jefe'
         "404":
@@ -624,6 +637,7 @@ paths:
           description: username to search for 
           schema:
             type: string
+            pattern: "^[a-zA-Z0-9]+$"
           required: true
           
       responses:
