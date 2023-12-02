@@ -19,11 +19,11 @@ components:
       example: 1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D7E8F9
       readOnly: true
       
-    Identifier:
-      title: Identifier of an object in the app
+    Comment:
+      title: Comment of a post
       description: |-
-        Identifier of an object that a user posts to another user, e.g., likes and comments. This identifier helps us identify the user who performed the action and the ID of this object.
-      type: object
+        comment provided by and user to an images of another user
+      type: object 
       properties:
         # identifier of the comment/like in a post 
         id:
@@ -32,16 +32,7 @@ components:
         # id of the user who does the comment/like, this will help us identify from whom the comment/like is
         userId: 
           $ref: "#/components/schemas/ID"
-
-      
-    Comment:
-      title: Comment of a post
-      description: |-
-        comment provided by and user to an images of another user
-      type: object 
-      properties:
-        identifier:
-          $ref: "#/components/schemas/Identifier"
+          
         # the comment per se
         body:
           type: string
@@ -55,8 +46,13 @@ components:
         like from a user to a photo/post of another user 
       type: object
       properties:
-        identifier:
-          $ref: "#/components/schemas/Identifier"
+        # identifier of the comment/like in a post 
+        id:
+          $ref: "#/components/schemas/ID"
+
+        # id of the user who does the comment/like, this will help us identify from whom the comment/like is
+        userId: 
+          $ref: "#/components/schemas/ID"
 
     Image:
       title: image of a post 
@@ -213,6 +209,7 @@ paths:
                     # change here if you decide to use an integer # or any other type of identifier
                     type: string
                     example: "abcdef012345"
+                    
   
   # LIKE PHOTO
   # here we want to add a like to a post 

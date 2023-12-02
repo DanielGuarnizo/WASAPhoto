@@ -6,23 +6,32 @@ import (
 	"net/http"
 )
 
+type Identifier struct {
+	// struct tag provided metadata of the structure field 
+	ID     int `json:"id"`
+	UserID int `json:"userId"` // Change from userId to UserID
+}
+
 type Like struct {
-	id     int
-	UserID int // Change from userId to UserID
+	Identifier Identifier `json:"identifier"`
 }
 
 type JSONErrorMsg struct {
-	Message string
+	Message string `json:"message"`
 }
 
 var Likes = []Like{
-	Like{
-		id:     1,
-		UserID: 1993238,
+	{
+		Identifier: Identifier{
+			ID:     0,
+			UserID: 1993238,
+		},
 	},
-	Like{
-		id:     2,
-		UserID: 1984033,
+	{
+		Identifier: Identifier{
+			ID:     1,
+			UserID: 1984033,
+		},
 	},
 }
 
@@ -34,11 +43,11 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 	w.Header().Set("Content-Type", "application/json")
 
 	// create a variable of type like in which we will parse the data passed in the request body
-	var like Like
+	var identifier Identifier
 
-	// read and parse the JSON data from the request body into a Like object.
+	// read and parse the JSON data from the request body into an Identifier object.
 	// the .Decode method parses the data retrieved in the object memory address &like
-	err := json.NewDecoder(r.Body).Decode(&like)
+	err := json.NewDecoder(r.Body).Decode(&identifier)
 
 	if err != nil {
 		// Handle error (e.g., invalid JSON format)
@@ -46,17 +55,19 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
-	new_id := len(Likes)
+	newID := len(Likes)
 
-	var new_like = Like{
-		id:     new_id,
-		UserID: like.UserID, // Change from userid to UserID
+	newLike := Like{
+		Identifier: Identifier{
+			ID:     newID,
+			UserID: identifier.UserID,
+		},
 	}
 
-	Likes = append(Likes, new_like)
+	Likes = append(Likes, newLike)
 
-	// Encode the new_like to a variable before writing it to the response writer
-	response, err := json.Marshal(new_like)
+	// Encode the newLike to a variable before writing it to the response writer
+	response, err := json.Marshal(newLike)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("like returned an error in encoding")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -71,6 +82,5 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	// ... (rest of your code if any)
 }
+
