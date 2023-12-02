@@ -1,25 +1,32 @@
 package api
 
 import (
-	"github.com/julienschmidt/httprouter"
-	"net/http"
 	"encoding/json"
+	"github.com/julienschmidt/httprouter"
 	"strconv"
+	"net/http"
+	"math/rand"
+	"time"
 )
-var Likes = []Like{
-	Like{
-		id:     0,
-		UserID: 1993238,
-	},
-	Like{
-		id:     1,
-		UserID: 1984033,
-	},
-}
 
 type Like struct {
-	id int
-	UserID int 
+	ID     string `json:"id"`
+	UserID string `json:"userId"` // Change from userId to UserID
+}
+
+type JSONErrorMsg struct {
+	Message string `json:"message"`
+}
+
+var Likes = []Like{
+	Like{
+		ID: "1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6",
+		UserID: "1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6",
+	},
+	Like{
+		ID: "9F8E7D6C5B4A3F2E1D0C9B8A7F6E5D4",
+		UserID: "9F8E7D6C5B4A3F2E1D0C9B8A7F6E5D4",
+	},
 }
 
 
@@ -32,12 +39,22 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		return 
 	}
 
-	// to handdle the error if the likeid is incorrect or not 
-	if likeid < 0 || likeid >= len(Likes) {
-		w.WriteHeader(StatusNotFound)
-		return 
+	// Iterate through Likes to find the index of the like with the matching ID
+	var foundIndex := -1
+	// key, value := iterated over an array of elements 
+	for i, like := range Likes {
+		if like.ID == likeid {
+			foundIndex = i
+			break
+		}
 	}
 
-	// if the likeid is correct then ir do the folloiwng
-	Likes := append(Likes[:likeid], Likes[likeid + 1:]...)
+	// If the like with the matching ID is found, remove it from Likes
+	if foundIndex != -1 {
+		Likes = append(Likes[:foundIndex], Likes[foundIndex+1:]...)
+		w.WriteHeader(http.StatusNoContent)
+	} else {
+		// If the like with the matching ID is not found, return a 404 Not Found status
+		w.WriteHeader(http.StatusNotFound)
+	}
 }

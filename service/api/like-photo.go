@@ -4,16 +4,13 @@ import (
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"math/rand"
+	"time"
 )
 
-type Identifier struct {
-	// struct tag provided metadata of the structure field 
-	ID     int `json:"id"`
-	UserID int `json:"userId"` // Change from userId to UserID
-}
-
 type Like struct {
-	Identifier Identifier `json:"identifier"`
+	ID     string `json:"id"`
+	UserID string `json:"userId"` // Change from userId to UserID
 }
 
 type JSONErrorMsg struct {
@@ -21,17 +18,13 @@ type JSONErrorMsg struct {
 }
 
 var Likes = []Like{
-	{
-		Identifier: Identifier{
-			ID:     0,
-			UserID: 1993238,
-		},
+	Like{
+		ID: "1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6",
+		UserID: "1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6",
 	},
-	{
-		Identifier: Identifier{
-			ID:     1,
-			UserID: 1984033,
-		},
+	Like{
+		ID: "9F8E7D6C5B4A3F2E1D0C9B8A7F6E5D4",
+		UserID: "9F8E7D6C5B4A3F2E1D0C9B8A7F6E5D4",
 	},
 }
 
@@ -43,11 +36,11 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 	w.Header().Set("Content-Type", "application/json")
 
 	// create a variable of type like in which we will parse the data passed in the request body
-	var identifier Identifier
+	var like Like
 
 	// read and parse the JSON data from the request body into an Identifier object.
 	// the .Decode method parses the data retrieved in the object memory address &like
-	err := json.NewDecoder(r.Body).Decode(&identifier)
+	err := json.NewDecoder(r.Body).Decode(&like)
 
 	if err != nil {
 		// Handle error (e.g., invalid JSON format)
@@ -55,13 +48,11 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
-	newID := len(Likes)
+	newID := generateUniqueID()
 
 	newLike := Like{
-		Identifier: Identifier{
-			ID:     newID,
-			UserID: identifier.UserID,
-		},
+		ID:     newID,
+		UserID: like.UserID,
 	}
 
 	Likes = append(Likes, newLike)
@@ -82,5 +73,20 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+// Function to generate a unique ID
+func generateUniqueID() string {
+	rand.Seed(time.Now().UnixNano())
+
+	const charset = "0123456789abcdefABCDEF"
+	const length = 32
+
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+
+	return string(b)
 }
 

@@ -12,6 +12,9 @@ func (rt *_router) Handler() http.Handler {
 	// Register routes, this is done to each requet we specify in the API file 
 	
 	rt.router.POST("/likes/", rt.likePhoto)
+	rt.router.DELELTE("/likes/{likeid}", rt.unlikePhoto)
+	rt.router.POST("/comments/", rt.commentPhoto)
+	rt.router.DELETE("/comments/{commentid}")
 
 
 
