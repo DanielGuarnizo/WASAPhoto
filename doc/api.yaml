@@ -8,23 +8,31 @@ info:
 
 components:   
   schemas:
+    ID: 
+      title: General ID format 
+      description: |-
+        it's spscify how and id should be structure 
+      type: string 
+      pattern: '^[a-fA-F0-9]{32}$'
+      minLength: 32
+      maxLength: 32
+      example: 1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D7E8F9
+      readOnly: true
+      
     Identifier:
       title: Identifier of an object in the app
       description: |-
-        identifier of an object that an user post in to anther user e.g, likes and comments. in this way we are able to identifier the user who do the action and the id of this object 
+        Identifier of an object that a user posts to another user, e.g., likes and comments. This identifier helps us identify the user who performed the action and the ID of this object.
       type: object
       properties:
         # identifier of the comment/like in a post 
         id:
-          type: integer 
-          example: 1
-          readOnly: true 
-        
-        # id of the user who does the comment/like, this will help us to identify from who is the comment/like 
+          $ref: "#/components/schemas/ID"
+
+        # id of the user who does the comment/like, this will help us identify from whom the comment/like is
         userId: 
-          type: integer
-          example: 1993527
-          readOnly: true
+          $ref: "#/components/schemas/ID"
+
       
     Comment:
       title: Comment of a post
@@ -69,9 +77,7 @@ components:
       
         # identifier that will hepl us to identify the post of a user 
         id: 
-          type: integer
-          example: 1
-          readOnly: true 
+          $ref: "#/components/schemas/ID" 
           
         # this specify the date in which the post was done and the time 
         uploaded:
@@ -128,9 +134,7 @@ components:
       type: object 
       properties: 
         id:
-          type: integer
-          example: 1993238
-          readOnly: true
+          $ref: "#/components/schemas/ID"
           
         # here will be collection of all the post the user did until now 
         username:
@@ -141,8 +145,8 @@ components:
           type: array 
           items:
             $ref: "#/components/schemas/Post"
-            minItems: 0 
-            maxItems: 2200
+          minItems: 0 
+          maxItems: 2200
             
         # indicates how many post/photos the user has in it's own profile
         numberOfPost:
@@ -258,7 +262,7 @@ paths:
         - name: likeid
           in: path
           schema:
-           type: integer
+            $ref: "#/components/schemas/ID"
           required: true 
         
       responses:
@@ -317,7 +321,7 @@ paths:
         - name: commentid
           in: path
           schema:
-            type: integer
+            $ref: "#/components/schemas/ID"
           required: true 
           
       responses:
@@ -346,7 +350,7 @@ paths:
         - name: userid
           in: path
           schema:
-            type: integer
+            $ref: "#/components/schemas/ID"
           required: true
       requestBody:
         description: partial update user information
@@ -382,7 +386,7 @@ paths:
         - name: userid
           in: path
           schema:
-            type: integer
+            $ref: "#/components/schemas/ID"
           required: true
           
       requestBody:
@@ -420,13 +424,13 @@ paths:
         - name: userid
           in: path
           schema:
-            type: integer
+            $ref: "#/components/schemas/ID"
           required: true
           
         - name: postid
           in: path
           schema:
-            type: integer
+            $ref: "#/components/schemas/ID"
           required: true
       
       responses:
@@ -456,7 +460,7 @@ paths:
           in: path
           description: ID of the user who want to follow another user
           schema:
-            type: integer 
+            $ref: "#/components/schemas/ID" 
           required: true 
       
       requestBody:
@@ -467,10 +471,8 @@ paths:
               properties:
                 
                 followingID:
-                  type: integer
-                  description: |-
-                    ID of the user that we want to follow, so ID of the user to be followed.
-                  example: 123124
+                  # ID of the user that we want to follow, so ID of the user to be followed.
+                  $ref: "#/components/schemas/ID"
                   
                 followingUsername:
                   type: string
@@ -488,11 +490,9 @@ paths:
                 properties:
                 
                   followingID:
-                    type: integer
-                    description: |-
-                      ID of the user that we want to follow, so ID of the user to be followed.
-                    example: 123124
-                  
+                    # ID of the user that we want to follow, so ID of the user to be followed.
+                    $ref: "#/components/schemas/ID"
+               
                   followingUsername:
                     type: string
                     pattern: "^[a-zA-Z0-9]+$"
@@ -518,13 +518,13 @@ paths:
         - name: userid
           in: path
           schema:
-            type: integer
+            $ref: "#/components/schemas/ID"
           required: true
         
         - name: followedid
           in: path
           schema:
-            type: integer
+            $ref: "#/components/schemas/ID"
           required: true
           
       responses:
@@ -554,7 +554,7 @@ paths:
           description: ID of the user who wants to mute another user.
           required: true
           schema:
-            type: integer
+            $ref: "#/components/schemas/ID"
             
       requestBody:
         content:
@@ -563,9 +563,8 @@ paths:
               type: object
               properties:
                 mutedUserId:
-                  type: integer
-                  description: ID of the user to be muted.
-                  example: 987654
+                  # ID of the user to be muted.
+                  $ref: "#/components/schemas/ID"
       responses:
         '201':
           description: User muted successfully.
@@ -575,9 +574,8 @@ paths:
                 type: object
                 properties:
                   mutedUserId:
-                    type: integer
-                    description: ID of the user to be muted.
-                    example: 987654
+                    # ID of the user to be muted.
+                    $ref: "#/components/schemas/ID"
         '404':
           description: User not found.
         '500':
@@ -598,13 +596,13 @@ paths:
           description: ID of the user who wants to unmute another user.
           required: true
           schema:
-            type: integer
+            $ref: "#/components/schemas/ID"
         - name: mutedUserid
           in: path
           description: ID of the user to be unmuted.
           required: true
           schema:
-            type: integer
+            $ref: "#/components/schemas/ID"
       responses:
         '204':
           description: User unmuted successfully.
@@ -629,7 +627,7 @@ paths:
           in: path
           description: user id who is looking for another user 
           schema:
-            type: integer
+            $ref: "#/components/schemas/ID"
           required: true
           
         - name: username
@@ -657,6 +655,7 @@ paths:
           
   # GET MY STREAM 
   /users/{userid}/stream:
+  
     get:
       tags:
         - Profile
@@ -669,7 +668,7 @@ paths:
         - name: userid
           in: path
           schema:
-            type: integer
+            $ref: "#/components/schemas/ID"
           required: true
       
       responses:

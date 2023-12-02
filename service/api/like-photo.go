@@ -1,67 +1,76 @@
 package api
 
 import (
+	"encoding/json"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
-	"encoding/json"
 )
 
-type Like struct{
-	id: int 
-	userId: int 
-}
-type JSONErrorMsg struct {
-	Message string 
+type Like struct {
+	id     int
+	UserID int // Change from userId to UserID
 }
 
-Likes = []Like{
-	{
-		id: 1
-		userId: 1993238
-	},{
-		id:2
-		userId: 1984033
+type JSONErrorMsg struct {
+	Message string
+}
+
+var Likes = []Like{
+	Like{
+		id:     1,
+		UserID: 1993238,
+	},
+	Like{
+		id:     2,
+		UserID: 1984033,
 	},
 }
 
-
-// add a like in the post of another user 
+// add a like in the post of another user
 func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// ps are the parameter passed by the URL path, the package httprouter will retrieve those values in the path 
+	// ps are the parameters passed by the URL path, the package httprouter will retrieve those values in the path
 
-	// this specify the content-type the server will return to the client
-	w.Header().Set("content-type", "application/json")
+	// this specifies the content-type the server will return to the client
+	w.Header().Set("Content-Type", "application/json")
 
-	// create a varible of type like in which we will parse the data passed in the request body 
+	// create a variable of type like in which we will parse the data passed in the request body
 	var like Like
 
-	// read and parse the JSON data from the request body into a Like object. 
-	// the .Decode method parse the data retrieve in the object memory address &like
+	// read and parse the JSON data from the request body into a Like object.
+	// the .Decode method parses the data retrieved in the object memory address &like
 	err := json.NewDecoder(r.Body).Decode(&like)
 
 	if err != nil {
-    	// Handle error (e.g., invalid JSON format)
-    	http.Error(w, "Invalid JSON format", http.StatusBadRequest)
-    	return
+		// Handle error (e.g., invalid JSON format)
+		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+		return
 	}
 
 	new_id := len(Likes)
 
 	var new_like = Like{
-		id: new_id
-		userid: like.userId
+		id:     new_id,
+		UserID: like.UserID, // Change from userid to UserID
 	}
 
-	Likes = append(Likes,new_like)
+	Likes = append(Likes, new_like)
 
-	
-	// we use the json package to assoaciate to an encoder the HTTP response writer w ot it 
-	// in such a way to return to the client the json object we specify early 
-	err:= json.NewEncoder(w).Encode(new_like)
+	// Encode the new_like to a variable before writing it to the response writer
+	response, err := json.Marshal(new_like)
 	if err != nil {
-		rt.baseLogger.WithError(err).Warning("like returnd an error in encodng error")
+		rt.baseLogger.WithError(err).Warning("like returned an error in encoding")
 		w.WriteHeader(http.StatusInternalServerError)
-		// here we can ignore the error because it comes from the writer so we don't care
-		_ = json.NewDecoder(w).Encode(JSONErrorMsg{Message: "internal server error or bad request body"})
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "internal server error or bad request body"})
+		return
 	}
+
+	// Write the encoded response to the response writer
+	_, err = w.Write(response)
+	if err != nil {
+		rt.baseLogger.WithError(err).Warning("like returned an error in writing response")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// ... (rest of your code if any)
 }
