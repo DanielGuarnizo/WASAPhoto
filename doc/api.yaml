@@ -109,19 +109,6 @@ components:
         numberOfLikes:
           type: integer
         
-    Stream:
-      title: stream of a user
-      description: |-
-        the stream will show the post of all the following person of the user 
-      type: object
-      properties:
-        # this wil be a collection of photos/post the user will see of all the others profiles his following 
-        photos:
-          type: array 
-          items:
-            $ref: "#/components/schemas/Post"
-          minItems: 0
-          maxItems: 2000
             
     Profile:
       title: Profile of an user on the app 
@@ -158,6 +145,19 @@ components:
           type: integer
           example: 1985 
 
+    Stream:
+      title: stream of a user
+      description: |-
+        the stream will show the post of all the following person of the user 
+      type: object
+      properties:
+        # this wil be a collection of photos/post the user will see of all the others profiles his following 
+        photos:
+          type: array 
+          items:
+            $ref: "#/components/schemas/Post"
+          minItems: 0
+          maxItems: 2000
 
 
         
@@ -362,6 +362,8 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Profile"}
               
+        "400":
+          description: Bad Request 
         "404":
           description: Resource not found
           

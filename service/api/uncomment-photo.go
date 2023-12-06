@@ -47,8 +47,10 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	if foundIndex != -1 {
 		Comments = append(Comments[:foundIndex], Comments[foundIndex+1:]...)
 		w.WriteHeader(http.StatusNoContent)
+		return 
 	} else {
 		// If the comment with the matching ID is not found, return a 404 Not Found status
 		w.WriteHeader(http.StatusNotFound)
+		return 
 	}
 }
