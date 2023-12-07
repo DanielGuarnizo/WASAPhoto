@@ -52,7 +52,7 @@ type Profile struct {
 
 // Example Profile 1
 profile1 := Profile{
-	ID:            "1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D7E8F9",
+	ID:            "1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D",
 	Username:      "user1",
 	Photos:        []Post{},
 	NumberOfPosts: 0,
@@ -62,7 +62,7 @@ profile1 := Profile{
 
 // Example Profile 2
 profile2 := Profile{
-	ID:            "9e8d7c6b5a4A3B2C1D0E9F8A7B6C5D4E3F2A1B0",
+	ID:            "9e8d7c6b5a4A3B2C1D0E9F8A7B6C5D4E3F",
 	Username:      "user2",
 	Photos:        []Post{},
 	NumberOfPosts: 0,
@@ -73,7 +73,7 @@ profile2 := Profile{
 
 // Example Post
 post := Post{
-	ID:              "1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D7E8F9",
+	ID:              "1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D",
 	Uploaded:        "2023-01-01T12:34:56",
 	Image:           Image{Image: "base64encodedimage"},
 	Comments:        []Comment{},

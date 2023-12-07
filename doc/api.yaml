@@ -5,8 +5,23 @@ info:
   title: Fantastic Coffee (decaffeinated)
   description: Fantastic Coffee (decaffeinated), the skeleton project for Web and Software architecture course
   version: 1.0.0
-
+security:
+  - bearerAuth: []
 components:   
+  securitySchemes:
+    bearerAuth:     # arbitrary name for the security scheme
+      description: "arbitrary name for the security scheme"       
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    UnauthorizedError:
+      description: Authentication information is missing or invalid
+      headers:
+        WWW_Authenticate:
+          schema:
+            type: string
   schemas:
     ID: 
       title: General ID format 
@@ -16,7 +31,7 @@ components:
       pattern: '^[a-fA-F0-9]{32}$'
       minLength: 32
       maxLength: 32
-      example: 1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D7E8F9
+      example: 1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D
       readOnly: true
       
     Comment:
@@ -36,6 +51,7 @@ components:
         # the comment per se
         body:
           type: string
+          description: "String representing a comment of a user"
           pattern: "^[a-zA-Z0-9]+$"
           minLength: 1
           maxLength: 2204
@@ -62,7 +78,10 @@ components:
       properties:
         image:
           type: string
+          description: "Binary representation of a image"
           format: base64
+          minLength: 1  
+          maxLength: 1048576
           
     Post:
       title: Post of an user on his profile 
@@ -70,7 +89,6 @@ components:
         a post make from an user that will be posted in his profile, this post contains an image which could have eventually likes and comment from others user 
       type: object
       properties:
-      
         # identifier that will hepl us to identify the post of a user 
         id: 
           $ref: "#/components/schemas/ID" 
@@ -78,8 +96,11 @@ components:
         # this specify the date in which the post was done and the time 
         uploaded:
           type: string
+          description: "this specify the date in which the post was done and the time"
           format: data-time
           pattern: ^\d{4}-\d{2}-\d{2}\d{2}:\d{2}:\d{2}$
+          maxLength: 19 
+          minLength: 19
         
         # the main object of this app are the image
         image:
@@ -88,6 +109,7 @@ components:
         # collecttion of possible comments the post could have (i am not sure if thsi part have to be in the properties)
         comments:
           type: array
+          description: "collecttion of possible comments the post could have (i am not sure if thsi part have to be in the properties)"
           items:  
             $ref: "#/components/schemas/Comment"
           minItems: 0
@@ -96,10 +118,12 @@ components:
         # number of comments the post has 
         numberOfComments:
           type: integer
+          description: "number of comments the post has"
         
         # collection of possible likes the post could have (i am not sure if thsi part have to be in the properties)
         likes:
           type: array
+          description: "collection of possible likes the post could have (i am not sure if thsi part have to be in the properties)"
           items: 
             $ref: "#/components/schemas/Like"
           minItems: 0
@@ -108,6 +132,7 @@ components:
         # number of likes the post could have
         numberOfLikes:
           type: integer
+          description: "number of likes the post could have"
         
             
     Profile:
@@ -122,10 +147,14 @@ components:
         # here will be collection of all the post the user did until now 
         username:
           type: string
-          pattern: "^[a-zA-Z0-9]+$"
+          description: "name of the user profile"
+          pattern: 'ˆ.*?$' 
+          minLength: 3 
+          maxLength: 16
           
         photos:
           type: array 
+          description: "an array of photos of a user"
           items:
             $ref: "#/components/schemas/Post"
           minItems: 0 
@@ -134,15 +163,18 @@ components:
         # indicates how many post/photos the user has in it's own profile
         numberOfPost:
           type: integer
+          description: "indicates how many post/photos the user has in it's own profile"
           
         # number of follower indicates how many people follow this profile 
         userFollowers:
           type: integer
+          description: "number of follower indicates how many people follow this profile "
           example: 2 # so this indicates that only two persons follow this user
         
         # number of other profiles the user follow 
         userFollowing:
           type: integer
+          description: "number of other profiles the user follow "
           example: 1985 
 
     Stream:
@@ -154,13 +186,12 @@ components:
         # this wil be a collection of photos/post the user will see of all the others profiles his following 
         photos:
           type: array 
+          description: "this wil be a collection of photos/post the user will see of all the others profiles his following "
           items:
             $ref: "#/components/schemas/Post"
           minItems: 0
           maxItems: 2000
 
-
-        
 tags: 
   - name: Posts
     description: requests made in posts of users 
@@ -168,11 +199,8 @@ tags:
     description: requests made by users 
   - name: Profile
     description: request made in profiles of users 
-  - name: Login
-    description: request made for login or related to it 
 
 paths:
-
   # DO LOGING
   /session: 
     post:
@@ -208,7 +236,7 @@ paths:
                   identifier:
                     # change here if you decide to use an integer # or any other type of identifier
                     type: string
-                    example: "abcdef012345"
+                    example: 1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D
                     
   
   # LIKE PHOTO
@@ -217,6 +245,8 @@ paths:
   
   /likes/:
     post:
+      security:
+        - bearerAuth: []
       tags:
         - Posts
       operationId: likePhoto
@@ -242,6 +272,8 @@ paths:
         '400':
             description: Bad request. Invalid user data.
             
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
         '500':
           description: Internal server error.
   
@@ -249,6 +281,8 @@ paths:
   # here we want to remove a like that we previously added to a post 
   /likes/{likeid}:
     delete: 
+      security:
+        - bearerAuth: []
       tags:
         - Posts
       operationId: unlikePhoto
@@ -268,7 +302,11 @@ paths:
         "204":
           description: |-
             specify if the like of an user post was correctly deletated 
+        '400':
+            description: Bad request. Invalid user data.
             
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
         "404":
           description: Resource not found 
           
@@ -279,6 +317,8 @@ paths:
   #here we want to add a comment to a post (it could be to the self post or to post of another user)
   /comments/:
     post:
+      security: 
+        - bearerAuth: []
       tags:
         - Post
       operationId: commentPhoto
@@ -300,6 +340,9 @@ paths:
               
         '400':
           description: Bad request. Invalid user data.
+            
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
         
         '500':
           description: Internal server error.
@@ -308,6 +351,8 @@ paths:
   # here we want to remove a comment but with a simple constraint that only the "owner" of the comment can delete it's own comment  
   /comments/{commentid}:
     delete:
+      security: 
+        - bearerAuth: []
       tags: 
         - Posts
       operationId: uncommentPhoto
@@ -325,6 +370,11 @@ paths:
         "204":
           description: |- 
             specify if the comment in the user post was correctly deletated 
+        '400':
+            description: Bad request. Invalid user data.
+            
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
             
         "404":
           description: Resource not found
@@ -337,6 +387,8 @@ paths:
   /users/{userid}:
     # using the patch method we are gonna to apply some modification to the resourrces without changing the complete resource 
     patch:
+      security: 
+        - bearerAuth: []
       tags: 
         - Profile 
         - Users
@@ -364,6 +416,10 @@ paths:
               
         "400":
           description: Bad Request 
+
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
+        
         "404":
           description: Resource not found
           
@@ -374,6 +430,8 @@ paths:
   # the user want to upload a post/photo to his profile 
   /users/{userid}/posts:
     post:
+      security: 
+        - bearerAuth: []
       tags: 
         - Profile
         - Users
@@ -399,6 +457,11 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Post"}
+        "400":
+          description: Bad Request
+
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
         
         "404":
           description: Resource not found
@@ -411,6 +474,8 @@ paths:
   # the user want to remove a post/photo from his profile Cascading Deletion In this approach, when a post is deleted, all associated likes and comments are automatically deleted as well. This is known as cascading deletion, where the deletion of a parent resource triggers the deletion of its dependent resources.
   /users/{userid}/posts/{postid}:
     delete:
+      security: 
+        - bearerAuth: []
       tags:
         - Profile 
         - Users
@@ -437,6 +502,12 @@ paths:
           description: |- 
             specify if the post in the user profile was correctly deletated
             
+        '400':
+            description: Bad request. Invalid user data.
+            
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
+
         "404":
           description: Resource not found
           
@@ -447,6 +518,8 @@ paths:
   # user want to  follow an user 
   /users/{userid}/following:
     post:
+      security:
+        - bearerAuth: []
       tags:
         - Users
       operationId: followUser
@@ -467,6 +540,7 @@ paths:
           application/json:
             schema:
               type: object
+              description: "ID of the user that we want to follow, so ID of the user to be followed"
               properties:
                 
                 followingID:
@@ -475,7 +549,7 @@ paths:
                   
                 followingUsername:
                   type: string
-                  pattern: "^[a-zA-Z0-9]+$"
+                  pattern: "ˆ.*?$"
                   description: Username of the user to be followed.
                   example: 'el_jefe'
       
@@ -486,6 +560,7 @@ paths:
             application/json:
               schema:
                 type: object
+                description: "ID of the user that we want to follow, so ID of the user to be followed."
                 properties:
                 
                   followingID:
@@ -494,9 +569,15 @@ paths:
                
                   followingUsername:
                     type: string
-                    pattern: "^[a-zA-Z0-9]+$"
+                    pattern: "ˆ.*?$"
                     description: Username of the user to be followed.
                     example: 'el_jefe'
+        '400':
+            description: Bad request. Invalid user data.
+            
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
+        
         "404":
           description: Resource not found
         
@@ -507,6 +588,8 @@ paths:
   # user want ot unfollow and user that start follow early
   /users/{userid}/following/{followedid}:
     delete:
+      security: 
+        - bearerAuth: []
       tags:
         - Users
       operationId: unfollowUser
@@ -531,6 +614,11 @@ paths:
           description: |- 
             specify if the followed user is not more in the collection of folliwing users 
             
+        '400':
+            description: Bad request. Invalid user data.
+            
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
         "404":
           description: Resource not found
           
@@ -542,6 +630,8 @@ paths:
   /users/{userid}/muted/:    
   # /users/{userid}/muted/{muteduserid}:
     post:
+      security: 
+        - bearerAuth: []
       tags:
         - Users
       summary: bandUser
@@ -560,6 +650,7 @@ paths:
           application/json:
             schema:
               type: object
+              description: "ID of the user to be muted."
               properties:
                 mutedUserId:
                   # ID of the user to be muted.
@@ -571,10 +662,17 @@ paths:
             application/json:
               schema:
                 type: object
+                description: "the userid of the muted person"
                 properties:
                   mutedUserId:
                     # ID of the user to be muted.
                     $ref: "#/components/schemas/ID"
+
+        '400':
+            description: Bad request. Invalid user data.
+            
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found.
         '500':
@@ -584,6 +682,8 @@ paths:
   # here we want to unmute an user from the muted collection 
   /users/{userid}/muted/{mutedUserid}:
     delete:
+      security:
+        - bearerAuth: []
       tags:   
         - Users
       summary: unbandUser
@@ -605,6 +705,11 @@ paths:
       responses:
         '204':
           description: User unmuted successfully.
+        '400':
+            description: Bad request. Invalid user data.
+            
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found or not muted.
         '500':
@@ -614,6 +719,8 @@ paths:
   # we use the path , without including the query parameters irectly in the path, it should be done when an user makes a request to search an user /users/search?username=desiredUsername
   /users/{userid}/profile:
     get:
+      security:
+        - bearerAuth: []
       tags:
         - Users
         - Profiles
@@ -634,7 +741,8 @@ paths:
           description: username to search for 
           schema:
             type: string
-            pattern: "^[a-zA-Z0-9]+$"
+            description: "username of the interesting profile"
+            pattern: "ˆ.*?$"
           required: true
           
       responses:
@@ -643,10 +751,13 @@ paths:
           description: User profile found successfully 
           content:
             application/json:
-              schema:
-                type: array
-                items: { $ref: "#/components/schemas/Profile"}
-        
+              schema: { $ref: "#/components/schemas/Profile"}
+
+        '400':
+            description: Bad request. Invalid user data.
+            
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: No user profiles found for the provided username.
         '500':
@@ -656,6 +767,8 @@ paths:
   /users/{userid}/stream:
   
     get:
+      security:
+        - bearerAuth: []
       tags:
         - Profile
         - Users
@@ -676,6 +789,11 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Stream"}
+        '400':
+            description: Bad request. Invalid user data.
+            
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: No user profiles found for the provided username.
         '500':

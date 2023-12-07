@@ -18,12 +18,12 @@ type Comment struct {
 var Comments = []Comment{
 	Comment{
 		ID: 	"1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6",
-		UserID: "1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6",
+		UserID: "1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C3",
 		Body: 	"this is the first comment",
 	},
 	Comment{
 		ID: 	"9F8E7D6C5B4A3F2E1D0C9B8A7F6E5D4",
-		UserID: "9F8E7D6C5B4A3F2E1D0C9B8A7F6E5D4",
+		UserID: "9F8E7D6C5B4A3F2E1D0C9B8A7F6E5D3",
 		Body: 	"this is a nother comment",
 	},
 }
