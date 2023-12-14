@@ -40,7 +40,6 @@ import (
 type AppDatabase interface {
 	GetName() (string, error)
 	SetName(name string) error
-
 	Ping() error
 }
 
