@@ -8,10 +8,7 @@ import (
 	"time"
 )
 
-type Like struct {
-	ID     string `json:"id"`
-	UserID string `json:"userId"` // Change from userId to UserID
-}
+
 
 type JSONErrorMsg struct {
 	Message string `json:"message"`

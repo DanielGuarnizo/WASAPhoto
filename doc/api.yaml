@@ -40,12 +40,16 @@ components:
         comment provided by and user to an images of another user
       type: object 
       properties:
-        # identifier of the comment/like in a post 
-        id:
+        # identifier of the post to which the comment belongs 
+        post_id:
+          $ref: "#/components/schemas/ID"
+
+        # identifier of the comment/like in a post, given that we cann have many of the same user
+        comment_id:
           $ref: "#/components/schemas/ID"
 
         # id of the user who does the comment/like, this will help us identify from whom the comment/like is
-        userId: 
+        user_id: 
           $ref: "#/components/schemas/ID"
           
         # the comment per se
@@ -62,12 +66,12 @@ components:
         like from a user to a photo/post of another user 
       type: object
       properties:
-        # identifier of the comment/like in a post 
-        id:
+        # identifier of the post to which the like belongs  
+        post_id:
           $ref: "#/components/schemas/ID"
 
         # id of the user who does the comment/like, this will help us identify from whom the comment/like is
-        userId: 
+        user_id: 
           $ref: "#/components/schemas/ID"
 
     Image:
@@ -89,8 +93,11 @@ components:
         a post make from an user that will be posted in his profile, this post contains an image which could have eventually likes and comment from others user 
       type: object
       properties:
+        # identifier of the user whose did the post 
+        user_id: 
+          $ref: "#/components/schemas/ID"
         # identifier that will hepl us to identify the post of a user 
-        id: 
+        post_id: 
           $ref: "#/components/schemas/ID" 
           
         # this specify the date in which the post was done and the time 
@@ -141,7 +148,7 @@ components:
         the profile for each user will contain information related to it, such as how many photos has been upload until now, how many follower and another user information
       type: object 
       properties: 
-        id:
+        user_id:
           $ref: "#/components/schemas/ID"
           
         # here will be collection of all the post the user did until now 
