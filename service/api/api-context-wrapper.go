@@ -1,7 +1,7 @@
 package api
 
 import (
-	"WASAPhotoDaniel/service/api/reqcontext"
+	"WASAPhoto/service/api/reqcontext"
 	"github.com/gofrs/uuid"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"

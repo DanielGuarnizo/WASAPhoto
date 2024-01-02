@@ -34,22 +34,93 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"WASAPhoto/service/api/structure"
 )
 
-// AppDatabase is the high level interface for the DB
+type Like struct {
+	Post_ID string `json:"post_id"`
+	Like_ID string `json:"like_id"`
+	User_ID string `json:"user_id"` // Change from userId to UserID
+}
+
+type Comment struct {
+	Post_ID     string `json:"post_id"`
+	Comment_ID 	string `json:"comment_id"`
+	User_ID 	string `json:"user_id"` // Change from userId to UserID
+	Body   		string `json:"body"`
+}
+
+type Image struct {
+	Image string `json:"image"`
+}
+
+type Post struct {	
+	User_ID         	string   	`json:"user_id"`
+	Post_ID 			string   	`json:"post_id"`
+	Uploaded        	string   	`json:"uploaded"`
+	Image           	Image    	`json:"image"`
+	Comments        	[]Comment	`json:"comments"`
+	NumberOfComments	int      	`json:"numberOfComments"`
+	Likes           	[]Like   	`json:"likes"`
+	NumberOfLikes   	int      	`json:"numberOfLikes"`
+}
+
+type User struct {
+	User_ID        string  `json:"user_id"`
+	Username       string  `json:"username"`
+}
+
+type Profile struct {
+	User 			User   `json:"user"`
+	Photos         []Post  `json:"photos"`
+	NumberOfPosts  int     `json:"numberOfPosts"`
+	UserFollowers  int     `json:"userFollowers"`
+	UserFollowing  int     `json:"userFollowing"`
+}
+
+// AppDatabase is the high-level interface for the DB
 type AppDatabase interface {
-	// GetName() (string, error)
-	// SetName(name string) error
-	// Ping() error
-	AddLike(structure.Like) (structure.Like, error)
-		// the name of the parameter is up to the implementation of the interface 
-		// we only define the type of the parameter the method should have 
-	
+	Ping() error
+
+	// like methods 
+	GetLike(string) (Like, error)
+	SetLike(Like) (error)
+	RemoveLike(string) (error)
+
+	// Commemt methods 
+	SetComment(Comment) (error) 
+	RemoveComment(string) (error)
+
+	// User methods
+	SetUsername(string, string) (User, error)
+	GetUserByName(string) (User, error)
+	CreateUser(string, string) (error)
+
+
+	// photo methods
+	UploadPhoto(Post) (error)
+	DeletePhoto(string) (error)
+	GetPhotos(string) ([]Post, error)
+
+	// follow methods
+	SetFollow(string, string) (error)
+	RemoveFollow(string, string) (error)
+	GetNumberOfFollowers(string) (int, error)
+	GetNumberOfFollowing(string) (int, error)
+
+	// band methods
+	BandUser(string, string) (error)
+	UnbandUser(string, string) (error)
+
+
+
+
+
+	// the name of the parameter is up to the implementation of the interface
+	// we only define the type of the parameter the method should have
 }
 
 type appdbimpl struct {
-	// sql.DB normally indicates a connection to a sql database 
+	// sql.DB normally indicates a connection to a SQL database
 	c *sql.DB
 }
 
@@ -57,7 +128,7 @@ type appdbimpl struct {
 // `db` is required - an error will be returned if `db` is `nil`.
 func New(db *sql.DB) (AppDatabase, error) {
 	if db == nil {
-		return nil, errors.New("database is required when building a AppDatabase")
+		return nil, errors.New("database is required when building an AppDatabase")
 	}
 
 	// Enable foreign keys
@@ -66,59 +137,63 @@ func New(db *sql.DB) (AppDatabase, error) {
 		return nil, err
 	}
 
-
 	// Check if table exists. If not, the database is empty, and we need to create the structure
 	var tableName string
-	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='users';`).Scan(&tableName)
+	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='users';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
-		// here we will go to define the structure of the tables in my database 
-		usersTable := 'CREATE TABLE users (
-			user_id string NOT NULL, 
-			username string UNIQUE NOT NULL,
-			PRIMARY KEY (id)
-			);'
-		// we use type TEXT in the definiton of the table given that the data type 
-		// is capable of storing large amounts of characters
-		postsTable := 'CREATE TABLE posts (
+		// here we will go to define the structure of the tables in my database
+		usersTable := `CREATE TABLE IF NOT EXISTS users (
 			user_id string NOT NULL,
-			post_id string NOT NULL 
+			username string UNIQUE NOT NULL,
+			PRIMARY KEY (user_id)
+		);`
+
+		// we use type TEXT in the definition of the table given that the data type
+		// is capable of storing large amounts of characters
+		postsTable := `CREATE TABLE IF NOT EXISTS posts (
+			user_id string NOT NULL,
+			post_id string NOT NULL,
 			uploaded DATETIME,
 			image TEXT,
-			numberOfLikes INTEGER, 
 			numberOfComments INTEGER,
+			numberOfLikes INTEGER,
 			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
 			PRIMARY KEY (post_id)
-			);'
-		likesTable := 'CREATE TABLE likes (
+		);`
+
+		likesTable := `CREATE TABLE IF NOT EXISTS likes (
 			post_id string NOT NULL,
-			user_id string NOT NULL, 
+			like_id string NOT NULL, 
+			user_id string NOT NULL,
 			FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE ON UPDATE CASCADE,
-			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
-			);'
-		commentsTable := 'CREATE TABLE comments (
+			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+			PRIMARY KEY (like_id)
+		);`
+
+		commentsTable := `CREATE TABLE IF NOT EXISTS comments (
 			post_id string NOT NULL,
 			comment_id string NOT NULL,
-			user_id string NOT NULL, 
-			body: TEXT,
+			user_id string NOT NULL,
+			body TEXT,
 			PRIMARY KEY (comment_id),
 			FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE ON UPDATE CASCADE,
 			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
-			);'
-		
-		bansTable := 'CREATE TABLE bans (
+		);`
+
+		bansTable := `CREATE TABLE IF NOT EXISTS bans (
 			banisher string NOT NULL,
 			banished string NOT NULL,
-			FOREING KEY (banisher) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-			FOREING KEY (banished) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
-			);'
+			FOREIGN KEY (banisher) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+			FOREIGN KEY (banished) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+		);`
 
-		followersTable := 'CREATE TABLE followers (
+		followersTable := `CREATE TABLE IF NOT EXISTS followers (
 			follower string NOT NULL,
-			followed string NOT NULL, 
-			FOREIGN KEY (follower) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE, 
+			followed string NOT NULL,
+			FOREIGN KEY (follower) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
 			FOREIGN KEY (followed) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
-			);'
-		
+		);`
+
 		_, err = db.Exec(usersTable)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
@@ -156,6 +231,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		c: db,
 	}, nil
 }
+
 // The purpose of this method is to check the connectivity status of the underlying database.
 func (db *appdbimpl) Ping() error {
 	return db.c.Ping()

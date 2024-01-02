@@ -25,13 +25,12 @@ components:
   schemas:
     ID: 
       title: General ID format 
-      description: |-
-        it's spscify how and id should be structure 
+      description: "Specifies the format of a unique identifier (UUID)."
       type: string 
-      pattern: '^[a-fA-F0-9]{32}$'
-      minLength: 32
-      maxLength: 32
-      example: 1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+      minLength: 36
+      maxLength: 36
+      example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
       readOnly: true
       
     Comment:
@@ -69,7 +68,9 @@ components:
         # identifier of the post to which the like belongs  
         post_id:
           $ref: "#/components/schemas/ID"
-
+        
+        like_id:
+          $ref: "#/components/schemas/ID"
         # id of the user who does the comment/like, this will help us identify from whom the comment/like is
         user_id: 
           $ref: "#/components/schemas/ID"
@@ -140,37 +141,56 @@ components:
         numberOfLikes:
           type: integer
           description: "number of likes the post could have"
-        
-            
+
+    Following:
+      title: Following
+      type: object
+      description: Represents a user following other users.
+      properties:
+        follower:
+          $ref: "#/components/schemas/ID"
+          description: The user who is following.
+        followed:
+          type: array
+          description: List of users being followed.
+          items:
+            $ref: "#/components/schemas/ID"
+
+    User:
+      title: User
+      description: User schema.
+      type: object
+      properties:
+        user_id:
+          $ref: "#/components/schemas/ID"
+        username:
+          type: string
+          description: "name of the user profile"
+          pattern: 'ˆ.*?$' 
+          example: "Daniel Guarnizo"
+          minLength: 3 
+          maxLength: 16         
+    
     Profile:
       title: Profile of an user on the app 
       description: |-
         the profile for each user will contain information related to it, such as how many photos has been upload until now, how many follower and another user information
       type: object 
       properties: 
-        user_id:
-          $ref: "#/components/schemas/ID"
-          
-        # here will be collection of all the post the user did until now 
-        username:
-          type: string
-          description: "name of the user profile"
-          pattern: 'ˆ.*?$' 
-          minLength: 3 
-          maxLength: 16
-          
+        user:
+          $ref: "#/components/schemas/User"
         photos:
           type: array 
-          description: "an array of photos of a user"
+          description: an array of photos of a user
           items:
             $ref: "#/components/schemas/Post"
           minItems: 0 
           maxItems: 2200
             
         # indicates how many post/photos the user has in it's own profile
-        numberOfPost:
+        numberOfPosts:
           type: integer
-          description: "indicates how many post/photos the user has in it's own profile"
+          description: "Number of posts/photos the user has in their profile."
           
         # number of follower indicates how many people follow this profile 
         userFollowers:
@@ -240,10 +260,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  identifier:
+                  user_id:
+                    $ref: "#/components/schemas/ID"
                     # change here if you decide to use an integer # or any other type of identifier
-                    type: string
-                    example: 1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D
+                    #type: string
+                    #example: 1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D
                     
   
   # LIKE PHOTO
@@ -277,10 +298,10 @@ paths:
               # means that the responses of the request is in a json format and indicates how it's organizes, what it has ecc...
               
         '400':
-            description: Bad request. Invalid user data.
+          description: Bad request. Invalid user data.
             
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '500':
           description: Internal server error.
   
@@ -310,10 +331,10 @@ paths:
           description: |-
             specify if the like of an user post was correctly deletated 
         '400':
-            description: Bad request. Invalid user data.
+          description: Bad request. Invalid user data.
             
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         "404":
           description: Resource not found 
           
@@ -394,14 +415,14 @@ paths:
   /users/{userid}:
     # using the patch method we are gonna to apply some modification to the resourrces without changing the complete resource 
     patch:
-      security: 
+      security:
         - bearerAuth: []
-      tags: 
-        - Profile 
+      tags:
+        - Profile
         - Users
       operationId: setMyUserName
-      summary: an  user want to change the username
-      description: an user want to change the username of it's own profile 
+      summary: User wants to change the username
+      description: An user wants to change the username of its own profile.
       parameters:
         - name: userid
           in: path
@@ -409,29 +430,31 @@ paths:
             $ref: "#/components/schemas/ID"
           required: true
       requestBody:
-        description: partial update user information
+        description: New username for the user
+        required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/Profile"}
+            schema:
+              type: object
+              properties:
+                newUsername:
+                  type: string
+              required: true 
       responses:
-        # he 200 OK status code indicates that the PATCH operation was successful. The server has applied the partial modifications to the resource, and the updated representation of the resource is included in the response body.
         "200":
-          description: user update name was successfully 
-          content:  
+          description: User update name was successful
+          content:
             application/json:
-              schema: { $ref: "#/components/schemas/Profile"}
-              
+              schema:
+                $ref: "#/components/schemas/User"
         "400":
-          description: Bad Request 
-
-        '401':
-            $ref: '#/components/responses/UnauthorizedError'
-        
+          description: Bad Request
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
         "404":
-          description: Resource not found
-          
+          description: User not found
         "500":
-          description: Internal server error 
+          description: Internal server error
     
   # UPLOAD PHOTO 
   # the user want to upload a post/photo to his profile 
@@ -549,14 +572,12 @@ paths:
               type: object
               description: "ID of the user that we want to follow, so ID of the user to be followed"
               properties:
-                
-                followingID:
+                followedID:
                   # ID of the user that we want to follow, so ID of the user to be followed.
                   $ref: "#/components/schemas/ID"
-                  
                 followingUsername:
                   type: string
-                  pattern: "ˆ.*?$"
+                  pattern: '^.*?$'
                   description: Username of the user to be followed.
                   example: 'el_jefe'
       
@@ -570,7 +591,7 @@ paths:
                 description: "ID of the user that we want to follow, so ID of the user to be followed."
                 properties:
                 
-                  followingID:
+                  followedID:
                     # ID of the user that we want to follow, so ID of the user to be followed.
                     $ref: "#/components/schemas/ID"
                
@@ -723,7 +744,8 @@ paths:
           description: Internal server error.  
           
   # GET USER PROFILE 
-  # we use the path , without including the query parameters irectly in the path, it should be done when an user makes a request to search an user /users/search?username=desiredUsername
+  # we use the path , without including the query parameters directly in the path, 
+  #it should be done when an user makes a request to search an user e.g  /users/{userid}/profile?username=desiredUsername
   /users/{userid}/profile:
     get:
       security:
@@ -749,7 +771,7 @@ paths:
           schema:
             type: string
             description: "username of the interesting profile"
-            pattern: "ˆ.*?$"
+            pattern: "^.*?$"
           required: true
           
       responses:
