@@ -439,7 +439,6 @@ paths:
               properties:
                 newUsername:
                   type: string
-              required: true 
       responses:
         "200":
           description: User update name was successful
