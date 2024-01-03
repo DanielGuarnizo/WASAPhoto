@@ -34,3 +34,28 @@ func (db *appdbimpl) GetNumberOfFollowers(userid string) (int, error) {
 	}
 	return count, nil
 }
+
+func (db *appdbimpl) GetFollowing(userid string) ([]string, error) {
+	query := "SELECT * FROM followees WHERE follower = ?"
+	rows, err := db.c.Query(query, userid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var followees []string
+
+	for rows.Next() {
+		var followee string
+		if err := rows.Scan(&followee); err != nil {
+			return nil, err
+		}
+		followees = append(followees, followee)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return followees, nil
+}

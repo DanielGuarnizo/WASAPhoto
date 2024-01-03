@@ -87,6 +87,7 @@ type AppDatabase interface {
 	RemoveLike(string) (error)
 
 	// Commemt methods 
+	GetComment(string) (Comment, error)
 	SetComment(Comment) (error) 
 	RemoveComment(string) (error)
 
@@ -99,13 +100,17 @@ type AppDatabase interface {
 	// photo methods
 	UploadPhoto(Post) (error)
 	DeletePhoto(string) (error)
+	GetUserIDForPost(string) (string,error)
 	GetPhotos(string) ([]Post, error)
+	GetLastPosts([]string) ([]Post, error)
 
 	// follow methods
 	SetFollow(string, string) (error)
 	RemoveFollow(string, string) (error)
 	GetNumberOfFollowers(string) (int, error)
 	GetNumberOfFollowing(string) (int, error)
+	GetFollowing(string) ([]string, error) 
+
 
 	// band methods
 	BandUser(string, string) (error)

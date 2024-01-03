@@ -3,6 +3,14 @@ package database
 import (
 	
 )
+func (db *appdbimpl) GetComment(commentid string) (Comment, error) {
+	var comment Comment
+	err := db.c.QueryRow(`SELECT * FROM comments WHERE comment_id = ?`, commentid).Scan(&comment.Post_ID, &comment.Comment_ID, &comment.User_ID)
+	if err != nil {
+		return Comment{}, err
+	}
+	return comment, nil
+}
 
 func (db *appdbimpl) SetComment(comment Comment) (error) {
 	_, err := db.c.Exec(`INSERT INTO comments (post_id, comment_id, user_id, body)`, comment.Post_ID, comment.Comment_ID, comment.User_ID, comment.Body)

@@ -38,9 +38,9 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 	
 	// defer closing the request body
     defer r.Body.Close()
-
+	userid := l.User_ID
 	// Authentication 
-	authorized := Authentication(w,r,l.User_ID)
+	authorized := Authentication(w,r,userid)
 	if authorized == false{
 		return 
 	}
@@ -97,8 +97,26 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		return 
 	}
 
+	dblike, err := rt.db.GetLike(likeid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Warning("like not found in the database")
+		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "comment not found in the database"})
+		return
+	}
+	var l Like
+	l.LikeFromDataBase(dblike)
+	userid := l.User_ID
+
+	// Authentication 
+	authorized := Authentication(w,r,userid)
+	if authorized == false{
+		return 
+	}
+
+
 	// Remove from the database the like given the likeid 
-	err := rt.db.RemoveLike(likeid)
+	err = rt.db.RemoveLike(likeid)
 	if err != nil {
 		// check it the err is of the same type of sql.ErrNoRows
 		if errors.Is(err, sql.ErrNoRows) {

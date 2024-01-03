@@ -21,6 +21,12 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
         return 
     }
 
+    // Authentication 
+	authorized := Authentication(w,r,userid)
+	if authorized == false{
+		return 
+	}
+
     // Read and parse the JSON data from the request body into a FollowRequest object
     var followReq FollowRequest
     err := json.NewDecoder(r.Body).Decode(&followReq)
@@ -76,6 +82,11 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
         w.WriteHeader(http.StatusBadRequest)
         return 
     }
+    // Authentication 
+	authorized := Authentication(w,r,userid)
+	if authorized == false{
+		return 
+	}
 
 	// Remove from the database the follow given the userid and the followedid  
 	err := rt.db.RemoveFollow(userid, followedid)

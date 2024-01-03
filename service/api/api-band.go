@@ -18,6 +18,11 @@ func (rt *_router) bandUser(w http.ResponseWriter, r *http.Request, ps httproute
         w.WriteHeader(http.StatusBadRequest)
         return 
     }
+	// Authentication 
+	authorized := Authentication(w,r,userid)
+	if authorized == false{
+		return 
+	}
 
 	var muteReq MuteRequest
 	err := json.NewDecoder(r.Body).Decode(&muteReq)
@@ -81,6 +86,11 @@ func (rt *_router) unbandUser(w http.ResponseWriter, r *http.Request, ps httprou
         w.WriteHeader(http.StatusBadRequest)
         return
     }
+	// Authentication 
+	authorized := Authentication(w,r,userid)
+	if authorized == false{
+		return 
+	}
 
     // Remove the user from the muted collection in the database
     err := rt.db.UnbandUser(userid, mutedUserid)

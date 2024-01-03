@@ -120,9 +120,6 @@ func (p *Post) PostFromDataBase(dbPost database.Post) {
 		apiLike.LikeFromDataBase(dbLike)
 		p.Likes = append(p.Likes, apiLike)
 	}
-
-	// Set other fields as needed
-	// ...
 }
 
 
@@ -167,4 +164,10 @@ type FollowRequest struct {
 
 type MuteRequest struct {
 	MutedUserID string 
+}
+
+// Stream 
+
+type Stream struct {
+	Photos []Post `json:"photos"`
 }

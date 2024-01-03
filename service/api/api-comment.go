@@ -40,6 +40,12 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 
 	// defer closing the request body
     defer r.Body.Close()
+	userid := comment.User_ID
+	// Authentication 
+	authorized := Authentication(w,r,userid)
+	if authorized == false{
+		return 
+	}
 
 	// Generated a new unique ID for the comment 
 	commentid := generateUniqueID()
@@ -91,8 +97,25 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
+	dbcomment, err := rt.db.GetComment(commentid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Warning("comment not found in the database")
+		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "comment not found in the database"})
+		return
+	}
+	var c Comment
+	c.CommentFromDataBase(dbcomment)
+	userid := c.User_ID
+
+	// Authentication 
+	authorized := Authentication(w,r,userid)
+	if authorized == false{
+		return 
+	}
+
 	// Remove from the database the comment given the commentid 
-	err := rt.db.RemoveComment(commentid)
+	err = rt.db.RemoveComment(commentid)
 	if err != nil {
 		// check it the err is od the same type of sql.ErrNoRows
 		if errors.Is(err, sql.ErrNoRows) {

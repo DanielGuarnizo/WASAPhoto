@@ -22,6 +22,8 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.DELETE("/users/{userid}/following/{followedid}", rt.unfollowUser)
 	rt.router.POST("/users/{userid}/muted/", rt.bandUser)
 	rt.router.DELETE("/users/{userid}/muted/", rt.unbandUser)
+	rt.router.GET("/users/{username}/profile", rt.getUserProfile)
+	
 	
 	//rt.router.GET("/", rt.getHelloWorld)
 	//rt.router.GET("/context", rt.wrap(rt.getContextReply))

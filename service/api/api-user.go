@@ -8,50 +8,6 @@ import (
 	"database/sql"
 )
 
-// // Example Profile 1
-// profile1 := Profile{
-// 	ID:            "1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D7E8F9",
-// 	Username:      "user1",
-// 	Photos:        []Post{},
-// 	NumberOfPosts: 0,
-// 	UserFollowers: 2,
-// 	UserFollowing: 1985,
-// }
-
-// // Example Profile 2
-// profile2 := Profile{
-// 	ID:            "9e8d7c6b5a4A3B2C1D0E9F8A7B6C5D4E3F2A1B0",
-// 	Username:      "user2",
-// 	Photos:        []Post{},
-// 	NumberOfPosts: 0,
-// 	UserFollowers: 5,
-// 	UserFollowing: 100,
-// }
-
-
-// // Example Post
-// post := Post{
-// 	ID:              "1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D7E8F9",
-// 	Uploaded:        "2023-01-01T12:34:56",
-// 	Image:           Image{Image: "base64encodedimage"},
-// 	Comments:        []Comment{},
-// 	NumberOfComments: 0,
-// 	Likes:           []Like{},
-// 	NumberOfLikes:   0,
-// }
-
-// profile1.Photos = append(profile.Photos, post)
-
-// var (
-// 	// Mutex to synchronize access to profiles slice
-// 	profilesMutex sync.Mutex
-
-// 	// Slice to store user profiles (simulating an in-memory database)
-// 	profiles []Profile
-// )
-
-// // add the example profiles to the slice profiles 
-// profiles = []Profile{profile1, profile2}
 
 
 func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -62,6 +18,11 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 	if userid == "" {
 		rt.baseLogger.Warning("the userid in the path is empty")
 		w.WriteHeader(http.StatusBadRequest)
+		return 
+	}
+	// Authentication 
+	authorized := Authentication(w,r,userid)
+	if authorized == false{
 		return 
 	}
 
@@ -137,6 +98,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 		return 
 	}
 
+
 	// Get the user from the database given the username
 	var ReqUser User
 	dbReqUser, err := rt.db.GetUserByName(username)
@@ -204,5 +166,62 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
+
+}
+
+// /users/{userid}/stream
+func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userid := ps.ByName("userid")
+
+	// Authentication 
+	authorized := Authentication(w,r,userid)
+	if authorized == false{
+		return 
+	}
+
+	// get the list of all the followees of the user given it's userid
+	followees, err := rt.db.GetFollowing(userid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Warning("Error retrieving followwes from  database")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
+		return
+	}
+
+	// get the list of lastest post of the following users given the user_id of each of them 
+	// then it returns a list of post and we conver from database.Post type to api.Post type
+	dblastPosts,err := rt.db.GetLastPosts(followees)
+	if err != nil {
+    	rt.baseLogger.WithError(err).Warning("Error getting photos from database")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
+		return
+	}
+	lastPosts := GetPhotosFromDatabase(dblastPosts)
+	
+	// we constructe the stream 
+	var stream Stream 
+	stream.Photos = lastPosts
+
+	// Encode the stream in to a variable before writing it to the response writer
+	response, err := json.Marshal(stream)
+	if err != nil {
+		rt.baseLogger.WithError(err).Warning("Error encoding stream for response")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
+		return
+	}
+
+	// Write the encoded response to the response writer
+	w.WriteHeader(http.StatusCreated)
+	_, err = w.Write(response)
+	if err != nil {
+		rt.baseLogger.WithError(err).Warning("Error writing response")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
+		return
+	}
 
 }
