@@ -5,26 +5,24 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 
-	"errors"
 	"database/sql"
+	"errors"
 )
 
 type JSONErrorMsg struct {
 	Message string `json:"message"`
 }
 
-
 // add a like in the post of another user
 // ps are the parameters passed by the URL path, the package httprouter will retrieve those values in the path
-// ctx is a contect object, is a way of passing data accross API boundaries 
+// ctx is a contect object, is a way of passing data accross API boundaries
 func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Specify the content-type the server will return to the client
 	w.Header().Set("Content-Type", "application/json")
 
-	
 	// Create a variable of type Like to parse the data passed in the request body
 	var l Like
-	
+
 	// Read and parse the JSON data from the request body into a Like object.
 	// The .Decode method parses the data into the object's memory address &l.
 	err := json.NewDecoder(r.Body).Decode(&l)
@@ -35,16 +33,16 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "bad request body"})
 		return
 	}
-	
+
 	// defer closing the request body
-    defer r.Body.Close()
+	defer r.Body.Close()
 	userid := l.User_ID
-	// Authentication 
-	authorized := Authentication(w,r,userid)
-	if authorized == false{
-		return 
+	// Authentication
+	authorized := Authentication(w, r, userid)
+	if authorized == false {
+		return
 	}
-	
+
 	// Generate a new unique ID for the like
 	likeid := generateUniqueID()
 	newlike := Like{
@@ -82,9 +80,7 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 	}
 }
 
-
-
-func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params){
+func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 
 	likeid := ps.ByName("likeid")
@@ -94,7 +90,7 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		// Handle the case when "likeid" is not present in the request.
 		rt.baseLogger.Warning("the likeid in the path is empty")
 		w.WriteHeader(http.StatusBadRequest)
-		return 
+		return
 	}
 
 	dblike, err := rt.db.GetLike(likeid)
@@ -108,14 +104,13 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	l.LikeFromDataBase(dblike)
 	userid := l.User_ID
 
-	// Authentication 
-	authorized := Authentication(w,r,userid)
-	if authorized == false{
-		return 
+	// Authentication
+	authorized := Authentication(w, r, userid)
+	if authorized == false {
+		return
 	}
 
-
-	// Remove from the database the like given the likeid 
+	// Remove from the database the like given the likeid
 	err = rt.db.RemoveLike(likeid)
 	if err != nil {
 		// check it the err is of the same type of sql.ErrNoRows
@@ -137,4 +132,3 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	w.WriteHeader(http.StatusNoContent)
 
 }
-

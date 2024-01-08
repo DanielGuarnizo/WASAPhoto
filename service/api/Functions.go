@@ -1,4 +1,4 @@
-package api 
+package api
 
 // import (
 // 	"math/rand"
@@ -21,9 +21,9 @@ package api
 // }
 
 import (
+	"encoding/json"
 	"github.com/google/uuid"
 	"net/http"
-	"encoding/json"
 )
 
 // Function to generate a unique ID using UUID
@@ -32,26 +32,25 @@ func generateUniqueID() string {
 	return id.String()
 }
 
-func Authentication(w http.ResponseWriter, r *http.Request, reqUserid string) (bool) {
+func Authentication(w http.ResponseWriter, r *http.Request, reqUserid string) bool {
 	userToken := r.Header.Get("Authorization")
-	if userToken != reqUserid || userToken == ""{
+	if userToken != reqUserid || userToken == "" {
 		handleUnauthorizedError(w)
-        return false
-	}else {
+		return false
+	} else {
 		return true
 	}
 }
 
 func handleUnauthorizedError(w http.ResponseWriter) {
-    w.WriteHeader(http.StatusUnauthorized)
+	w.WriteHeader(http.StatusUnauthorized)
 
-    // You can include additional information in the response body if needed
-    response := map[string]string{
-        "error": "UnauthorizedError",
-        "message": "Authentication information is missing or invalid",
-    }
+	// You can include additional information in the response body if needed
+	response := map[string]string{
+		"error":   "UnauthorizedError",
+		"message": "Authentication information is missing or invalid",
+	}
 
-    // Convert the response to JSON and write it to the response body
-    _ = json.NewEncoder(w).Encode(response)
+	// Convert the response to JSON and write it to the response body
+	_ = json.NewEncoder(w).Encode(response)
 }
- 

@@ -24,13 +24,13 @@ executable during the build).
 package main
 
 import (
+	"WASAPhoto/service/api"
+	"WASAPhoto/service/database"
+	"WASAPhoto/service/globaltime"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
-	"WASAPhoto/service/api"
-	"WASAPhoto/service/database"
-	"WASAPhoto/service/globaltime"
 	"github.com/ardanlabs/conf"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"

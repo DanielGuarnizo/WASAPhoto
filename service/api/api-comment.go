@@ -1,14 +1,12 @@
 package api
 
 import (
-	"net/http"
-	"encoding/json"
-	"github.com/julienschmidt/httprouter"
-	"errors"
 	"database/sql"
+	"encoding/json"
+	"errors"
+	"github.com/julienschmidt/httprouter"
+	"net/http"
 )
-
-
 
 // var Comments = []Comment{
 // 	Comment{
@@ -26,7 +24,7 @@ import (
 func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("content-type", "application/json")
 
-	var comment Comment 
+	var comment Comment
 
 	// fetch the comment pass in the request body
 	err := json.NewDecoder(r.Body).Decode(&comment)
@@ -34,29 +32,29 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 		// this error happend when the request has a bad json structure
 		rt.baseLogger.WithError(err).Warning("Invalid JSON format")
 		w.WriteHeader(http.StatusBadRequest)
-		_= json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Bad request body"})
-		return 
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Bad request body"})
+		return
 	}
 
 	// defer closing the request body
-    defer r.Body.Close()
+	defer r.Body.Close()
 	userid := comment.User_ID
-	// Authentication 
-	authorized := Authentication(w,r,userid)
-	if authorized == false{
-		return 
+	// Authentication
+	authorized := Authentication(w, r, userid)
+	if authorized == false {
+		return
 	}
 
-	// Generated a new unique ID for the comment 
+	// Generated a new unique ID for the comment
 	commentid := generateUniqueID()
 	newComment := Comment{
-		Post_ID: comment.Post_ID,
+		Post_ID:    comment.Post_ID,
 		Comment_ID: commentid,
-		User_ID: comment.User_ID,
-		Body: comment.Body,
+		User_ID:    comment.User_ID,
+		Body:       comment.Body,
 	}
 
-	// Save the new comment in the database 
+	// Save the new comment in the database
 	err = rt.db.SetComment(newComment.CommentToDataBase())
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error saving comment into database")
@@ -86,10 +84,9 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 
 }
 
-
 func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("content-type", "application/json")
-	
+
 	commentid := ps.ByName("commentid")
 	if commentid == "" {
 		rt.baseLogger.Warning("The commentid in the path is empty")
@@ -108,13 +105,13 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 	c.CommentFromDataBase(dbcomment)
 	userid := c.User_ID
 
-	// Authentication 
-	authorized := Authentication(w,r,userid)
-	if authorized == false{
-		return 
+	// Authentication
+	authorized := Authentication(w, r, userid)
+	if authorized == false {
+		return
 	}
 
-	// Remove from the database the comment given the commentid 
+	// Remove from the database the comment given the commentid
 	err = rt.db.RemoveComment(commentid)
 	if err != nil {
 		// check it the err is od the same type of sql.ErrNoRows
@@ -135,4 +132,3 @@ func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps htt
 
 	w.WriteHeader(http.StatusNoContent)
 }
-

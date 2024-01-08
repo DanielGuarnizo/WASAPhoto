@@ -43,82 +43,76 @@ type Like struct {
 }
 
 type Comment struct {
-	Post_ID     string `json:"post_id"`
-	Comment_ID 	string `json:"comment_id"`
-	User_ID 	string `json:"user_id"` // Change from userId to UserID
-	Body   		string `json:"body"`
+	Post_ID    string `json:"post_id"`
+	Comment_ID string `json:"comment_id"`
+	User_ID    string `json:"user_id"` // Change from userId to UserID
+	Body       string `json:"body"`
 }
 
 type Image struct {
 	Image string `json:"image"`
 }
 
-type Post struct {	
-	User_ID         	string   	`json:"user_id"`
-	Post_ID 			string   	`json:"post_id"`
-	Uploaded        	string   	`json:"uploaded"`
-	Image           	Image    	`json:"image"`
-	Comments        	[]Comment	`json:"comments"`
-	NumberOfComments	int      	`json:"numberOfComments"`
-	Likes           	[]Like   	`json:"likes"`
-	NumberOfLikes   	int      	`json:"numberOfLikes"`
+type Post struct {
+	User_ID          string    `json:"user_id"`
+	Post_ID          string    `json:"post_id"`
+	Uploaded         string    `json:"uploaded"`
+	Image            Image     `json:"image"`
+	Comments         []Comment `json:"comments"`
+	NumberOfComments int       `json:"numberOfComments"`
+	Likes            []Like    `json:"likes"`
+	NumberOfLikes    int       `json:"numberOfLikes"`
 }
 
 type User struct {
-	User_ID        string  `json:"user_id"`
-	Username       string  `json:"username"`
+	User_ID  string `json:"user_id"`
+	Username string `json:"username"`
 }
 
 type Profile struct {
-	User 			User   `json:"user"`
-	Photos         []Post  `json:"photos"`
-	NumberOfPosts  int     `json:"numberOfPosts"`
-	UserFollowers  int     `json:"userFollowers"`
-	UserFollowing  int     `json:"userFollowing"`
+	User          User   `json:"user"`
+	Photos        []Post `json:"photos"`
+	NumberOfPosts int    `json:"numberOfPosts"`
+	UserFollowers int    `json:"userFollowers"`
+	UserFollowing int    `json:"userFollowing"`
 }
 
 // AppDatabase is the high-level interface for the DB
 type AppDatabase interface {
 	Ping() error
 
-	// like methods 
+	// like methods
 	GetLike(string) (Like, error)
-	SetLike(Like) (error)
-	RemoveLike(string) (error)
+	SetLike(Like) error
+	RemoveLike(string) error
 
-	// Commemt methods 
+	// Commemt methods
 	GetComment(string) (Comment, error)
-	SetComment(Comment) (error) 
-	RemoveComment(string) (error)
+	SetComment(Comment) error
+	RemoveComment(string) error
 
 	// User methods
 	SetUsername(string, string) (User, error)
 	GetUserByName(string) (User, error)
-	CreateUser(string, string) (error)
-
+	CreateUser(string, string) error
 
 	// photo methods
-	UploadPhoto(Post) (error)
-	DeletePhoto(string) (error)
-	GetUserIDForPost(string) (string,error)
+	UploadPhoto(Post) error
+	DeletePhoto(string) error
+	GetUserIDForPost(string) (string, error)
 	GetPhotos(string) ([]Post, error)
 	GetLastPosts([]string) ([]Post, error)
 
 	// follow methods
-	SetFollow(string, string) (error)
-	RemoveFollow(string, string) (error)
+	SetFollow(string, string) error
+	RemoveFollow(string, string) error
 	GetNumberOfFollowers(string) (int, error)
 	GetNumberOfFollowing(string) (int, error)
-	GetFollowing(string) ([]string, error) 
-
+	GetFollowing(string) ([]string, error)
 
 	// band methods
-	BandUser(string, string) (error)
-	UnbandUser(string, string) (error)
-
-
-
-
+	BandUser(string, string) error
+	UnbandUser(string, string) error
 
 	// the name of the parameter is up to the implementation of the interface
 	// we only define the type of the parameter the method should have
@@ -230,7 +224,6 @@ func New(db *sql.DB) (AppDatabase, error) {
 		}
 
 	}
-
 
 	return &appdbimpl{
 		c: db,

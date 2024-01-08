@@ -1,48 +1,45 @@
-package api 
+package api
 
 import (
-	"net/http"
-	"encoding/json"
-	"github.com/julienschmidt/httprouter"
-	"errors"
 	"database/sql"
+	"encoding/json"
+	"errors"
+	"github.com/julienschmidt/httprouter"
+	"net/http"
 )
-
-
 
 func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// get from the path the userid and handle error 
+	// get from the path the userid and handle error
 	userid := ps.ByName("userid")
 	if userid == "" {
 		rt.baseLogger.Warning("the userid in the path is empty")
 		w.WriteHeader(http.StatusBadRequest)
-		return 
+		return
 	}
-	// Authentication 
-	authorized := Authentication(w,r,userid)
-	if authorized == false{
-		return 
+	// Authentication
+	authorized := Authentication(w, r, userid)
+	if authorized == false {
+		return
 	}
 
-	// read and parse the json data from the request body into an username upadate object 
+	// read and parse the json data from the request body into an username upadate object
 	type UsernameUpdate struct {
 		NewUsername string `json:"newUsername"`
 	}
 	var update UsernameUpdate
 	err := json.NewDecoder(r.Body).Decode(&update)
 	if err != nil {
-    	// Handle error (e.g., invalid JSON format)
+		// Handle error (e.g., invalid JSON format)
 		rt.baseLogger.WithError(err).Warning("invalid JSON format")
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "bad request body"})
-		return 
+		return
 	}
 
 	// defer closing the request body
-    defer r.Body.Close()
-	
+	defer r.Body.Close()
 
 	// set the new name the user pass in the request body in the database
 	newname := update.NewUsername
@@ -64,26 +61,26 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 	}
 
 	// Return the updated profile
-    var updatedUser User
-    updatedUser.UserFromDataBase(dbuser)
-	
-	// Serialize the updated user as JSON and write it to the response
-    response, err := json.Marshal(updatedUser)
-    if err != nil {
-        rt.baseLogger.WithError(err).Warning("Error encoding JSON response")
-        w.WriteHeader(http.StatusInternalServerError)
-        _ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
-        return
-    }
+	var updatedUser User
+	updatedUser.UserFromDataBase(dbuser)
 
-    w.WriteHeader(http.StatusOK)
-    _, err = w.Write(response)
-    if err != nil {
-        rt.baseLogger.WithError(err).Warning("Error writing response")
-        w.WriteHeader(http.StatusInternalServerError)
-        _ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
-        return
-    }
+	// Serialize the updated user as JSON and write it to the response
+	response, err := json.Marshal(updatedUser)
+	if err != nil {
+		rt.baseLogger.WithError(err).Warning("Error encoding JSON response")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(response)
+	if err != nil {
+		rt.baseLogger.WithError(err).Warning("Error writing response")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
+		return
+	}
 }
 
 func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -92,29 +89,28 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	userid := ps.ByName("userid")
 	username := r.URL.Query().Get("username")
 
-	// Authentication 
-	authorized := Authentication(w,r,userid)
-	if authorized == false{
-		return 
+	// Authentication
+	authorized := Authentication(w, r, userid)
+	if authorized == false {
+		return
 	}
-
 
 	// Get the user from the database given the username
 	var ReqUser User
 	dbReqUser, err := rt.db.GetUserByName(username)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error checking if user exists")
-        w.WriteHeader(http.StatusInternalServerError)
-        return
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	ReqUser.UserFromDataBase(dbReqUser)
 
-	// retrive all the data needed for fetch profile given the request user 
+	// retrive all the data needed for fetch profile given the request user
 	var profile Profile
 	//var photos []Post
 	dbPhotos, err := rt.db.GetPhotos(ReqUser.User_ID)
 	if err != nil {
-    	rt.baseLogger.WithError(err).Warning("Error getting photos from database")
+		rt.baseLogger.WithError(err).Warning("Error getting photos from database")
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
 		return
@@ -122,7 +118,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	// Convert the list of database.Post to a list of api.Post
 	apiPhotos := GetPhotosFromDatabase(dbPhotos)
 
-	// fetch profile 
+	// fetch profile
 	{
 		profile.User = ReqUser
 		profile.Photos = apiPhotos
@@ -137,12 +133,12 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 		}
 		profile.UserFollowers = count1
 
-		count2, err := rt.db.GetNumberOfFollowing(ReqUser.User_ID) 
+		count2, err := rt.db.GetNumberOfFollowing(ReqUser.User_ID)
 		if err != nil {
 			rt.baseLogger.WithError(err).Warning("Error getting number of following from database")
 			w.WriteHeader(http.StatusInternalServerError)
 			_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
-			return 
+			return
 		}
 		profile.UserFollowing = count2
 	}
@@ -166,7 +162,6 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-
 }
 
 // /users/{userid}/stream
@@ -175,10 +170,10 @@ func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httpro
 
 	userid := ps.ByName("userid")
 
-	// Authentication 
-	authorized := Authentication(w,r,userid)
-	if authorized == false{
-		return 
+	// Authentication
+	authorized := Authentication(w, r, userid)
+	if authorized == false {
+		return
 	}
 
 	// get the list of all the followees of the user given it's userid
@@ -190,19 +185,19 @@ func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	// get the list of lastest post of the following users given the user_id of each of them 
+	// get the list of lastest post of the following users given the user_id of each of them
 	// then it returns a list of post and we conver from database.Post type to api.Post type
-	dblastPosts,err := rt.db.GetLastPosts(followees)
+	dblastPosts, err := rt.db.GetLastPosts(followees)
 	if err != nil {
-    	rt.baseLogger.WithError(err).Warning("Error getting photos from database")
+		rt.baseLogger.WithError(err).Warning("Error getting photos from database")
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
 		return
 	}
 	lastPosts := GetPhotosFromDatabase(dblastPosts)
-	
-	// we constructe the stream 
-	var stream Stream 
+
+	// we constructe the stream
+	var stream Stream
 	stream.Photos = lastPosts
 
 	// Encode the stream in to a variable before writing it to the response writer

@@ -30,7 +30,9 @@ components:
       pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
       minLength: 36
       maxLength: 36
-      example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+      example: 3e7b82c1-8f66-4f54-9e57-7baa8a0ea8e3
+               
+               # 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
       readOnly: true
       
     Comment:
@@ -85,6 +87,7 @@ components:
           type: string
           description: "Binary representation of a image"
           format: base64
+          pattern: '^[a-zA-Z0-9+/]*={0,2}$'
           minLength: 1  
           maxLength: 1048576
           
@@ -109,6 +112,7 @@ components:
           pattern: ^\d{4}-\d{2}-\d{2}\d{2}:\d{2}:\d{2}$
           maxLength: 19 
           minLength: 19
+          example: 2022-01-01 12:34:56
         
         # the main object of this app are the image
         image:
@@ -166,7 +170,7 @@ components:
         username:
           type: string
           description: "name of the user profile"
-          pattern: 'ˆ.*?$' 
+          pattern: '^.*?$' 
           example: "Daniel Guarnizo"
           minLength: 3 
           maxLength: 16         
@@ -439,6 +443,8 @@ paths:
               properties:
                 newUsername:
                   type: string
+                  description: "The new username to be set for the user."
+      
       responses:
         "200":
           description: User update name was successful
@@ -579,6 +585,8 @@ paths:
                   pattern: '^.*?$'
                   description: Username of the user to be followed.
                   example: 'el_jefe'
+                  minLength: 3 
+                  maxLength: 16 
       
       responses:
         "201":
@@ -661,7 +669,8 @@ paths:
         - bearerAuth: []
       tags:
         - Users
-      summary: bandUser
+      operationId: banUser 
+      summary: an user band another user
       description: |-
         Mutes another user, preventing them from interacting with the specified user.
       parameters:
@@ -713,7 +722,8 @@ paths:
         - bearerAuth: []
       tags:   
         - Users
-      summary: unbandUser
+      operationId: unbanUser
+      summary: an user unban another user 
       description: |-
         Allows a user to unmute another user, allowing them to interact again.
       parameters:

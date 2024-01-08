@@ -1,19 +1,19 @@
-package database 
+package database
 
-func (db *appdbimpl) SetFollow(userid string, followedid string) (error) {
-    _, err := db.c.Exec(`INSERT INTO followers (follower, followed) VALUES (?,?)`, userid, followedid)
-    if err != nil {
-        return err
-    }
-    return nil 
+func (db *appdbimpl) SetFollow(userid string, followedid string) error {
+	_, err := db.c.Exec(`INSERT INTO followers (follower, followed) VALUES (?,?)`, userid, followedid)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (db *appdbimpl) RemoveFollow(userid string, followedid string) (error) {
+func (db *appdbimpl) RemoveFollow(userid string, followedid string) error {
 	_, err := db.c.Exec(`DELETE FROM followers WHERE follower = ? AND followed = ?`, userid, followedid)
 	if err != nil {
-		return err 
+		return err
 	}
-	return nil 
+	return nil
 }
 
 func (db *appdbimpl) GetNumberOfFollowing(userid string) (int, error) {
@@ -24,7 +24,6 @@ func (db *appdbimpl) GetNumberOfFollowing(userid string) (int, error) {
 	}
 	return count, nil
 }
-
 
 func (db *appdbimpl) GetNumberOfFollowers(userid string) (int, error) {
 	var count int

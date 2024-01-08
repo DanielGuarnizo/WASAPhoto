@@ -1,8 +1,8 @@
 package database
 
 func (db *appdbimpl) SetUsername(newname string, userid string) (User, error) {
-	var user User 
-	_, err := db.c.Exec(`UPDATE users SET username = ? WHERE user_id = ? `,newname, userid)
+	var user User
+	_, err := db.c.Exec(`UPDATE users SET username = ? WHERE user_id = ? `, newname, userid)
 	if err != nil {
 		return user, err
 	}
@@ -11,7 +11,7 @@ func (db *appdbimpl) SetUsername(newname string, userid string) (User, error) {
 		return user, err
 	}
 
-	return user, nil 
+	return user, nil
 }
 
 func (db *appdbimpl) GetUserByName(username string) (User, error) {
@@ -23,10 +23,10 @@ func (db *appdbimpl) GetUserByName(username string) (User, error) {
 	return user, nil
 }
 
-func (db *appdbimpl) CreateUser(newUserid string, username string) (error) {
+func (db *appdbimpl) CreateUser(newUserid string, username string) error {
 	_, err := db.c.Exec(`INSERT INTO users (?,?) VALUES (?,?)`, newUserid, username)
 	if err != nil {
 		return err
 	}
-	return nil 
+	return nil
 }

@@ -1,17 +1,18 @@
-package database 
+package database
+
 import (
 	"database/sql"
 )
 
-func (db *appdbimpl) UploadPhoto(post Post) (error) {
+func (db *appdbimpl) UploadPhoto(post Post) error {
 	_, err := db.c.Exec(`INSERT INTO posts (user_id, post_id, uploaded, image, numberOfComments, numberOfLikes) VALUES (?,?,?,?,?,?)`, post.User_ID, post.Post_ID, post.Uploaded, post.Image, post.NumberOfComments, post.NumberOfLikes)
 	if err != nil {
 		return err
 	}
-	return nil 
+	return nil
 }
 
-func (db *appdbimpl) DeletePhoto(postid string) (error) {
+func (db *appdbimpl) DeletePhoto(postid string) error {
 	_, err := db.c.Exec(`DELETE FROM posts WHERE post_id = ?`, postid)
 	if err != nil {
 		return err
@@ -59,7 +60,7 @@ func (db *appdbimpl) GetPhotos(userid string) ([]Post, error) {
 	return posts, nil
 }
 
-func (db *appdbimpl) GetLastPosts(userIDs []string) ([]Post,error) {
+func (db *appdbimpl) GetLastPosts(userIDs []string) ([]Post, error) {
 	var lastPosts []Post
 
 	for _, userID := range userIDs {
@@ -69,30 +70,30 @@ func (db *appdbimpl) GetLastPosts(userIDs []string) ([]Post,error) {
 		post.Likes, _ = db.GetLikes(post.Post_ID)
 		if err != nil {
 			if err == sql.ErrNoRows {
-				// No posts found for the user so we pass to the next user id , because there is not an error 
+				// No posts found for the user so we pass to the next user id , because there is not an error
 				continue
 			}
-			return nil, err 
+			return nil, err
 		}
 
 		lastPosts = append(lastPosts, post)
 
 	}
-	return lastPosts, nil 
+	return lastPosts, nil
 }
 func (db *appdbimpl) GetUserIDForPost(postID string) (string, error) {
-    var User_ID string
+	var User_ID string
 
-    query := "SELECT user_id FROM posts WHERE post_id = ?"
-    err := db.c.QueryRow(query, postID).Scan(&User_ID)
+	query := "SELECT user_id FROM posts WHERE post_id = ?"
+	err := db.c.QueryRow(query, postID).Scan(&User_ID)
 
-    if err != nil {
-        if err == sql.ErrNoRows {
-            // No post found for the given post ID
-            return "", err
-        }
-        return "", err
-    }
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// No post found for the given post ID
+			return "", err
+		}
+		return "", err
+	}
 
-    return User_ID, nil
+	return User_ID, nil
 }

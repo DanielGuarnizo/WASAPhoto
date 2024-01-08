@@ -1,4 +1,4 @@
-package api 
+package api
 
 import (
 	"WASAPhoto/service/database"
@@ -11,7 +11,7 @@ type Like struct {
 }
 
 func (l *Like) LikeToDataBase() database.Like {
-	return database.Like {
+	return database.Like{
 		Post_ID: l.Post_ID,
 		User_ID: l.User_ID,
 	}
@@ -23,20 +23,20 @@ func (l *Like) LikeFromDataBase(like database.Like) {
 	l.User_ID = like.User_ID
 }
 
-// Comment structure and function to pass object to and from different packages 
+// Comment structure and function to pass object to and from different packages
 type Comment struct {
-	Post_ID     string `json:"post_id"`
-	Comment_ID 	string `json:"comment_id"`
-	User_ID 	string `json:"user_id"` // Change from userId to UserID
-	Body   		string `json:"body"`
+	Post_ID    string `json:"post_id"`
+	Comment_ID string `json:"comment_id"`
+	User_ID    string `json:"user_id"` // Change from userId to UserID
+	Body       string `json:"body"`
 }
 
 func (c *Comment) CommentToDataBase() database.Comment {
-	return database.Comment {
-		Post_ID: c.Post_ID, 
-		Comment_ID: c.Comment_ID, 
-		User_ID: c.User_ID,
-		Body: c.Body,
+	return database.Comment{
+		Post_ID:    c.Post_ID,
+		Comment_ID: c.Comment_ID,
+		User_ID:    c.User_ID,
+		Body:       c.Body,
 	}
 }
 
@@ -47,38 +47,35 @@ func (c *Comment) CommentFromDataBase(comment database.Comment) {
 	c.Body = comment.Body
 }
 
-//Image represents an image of a post
+// Image represents an image of a post
 type Image struct {
 	Image string `json:"image"`
 }
 
 // Post represents a user's post on their profile
-type Post struct {	
-	User_ID         	string   	`json:"user_id"`
-	Post_ID 			string   	`json:"post_id"`
-	Uploaded        	string   	`json:"uploaded"`
-	Image           	Image    	`json:"image"`
-	Comments        	[]Comment	`json:"comments"`
-	NumberOfComments	int      	`json:"numberOfComments"`
-	Likes           	[]Like   	`json:"likes"`
-	NumberOfLikes   	int      	`json:"numberOfLikes"`
+type Post struct {
+	User_ID          string    `json:"user_id"`
+	Post_ID          string    `json:"post_id"`
+	Uploaded         string    `json:"uploaded"`
+	Image            Image     `json:"image"`
+	Comments         []Comment `json:"comments"`
+	NumberOfComments int       `json:"numberOfComments"`
+	Likes            []Like    `json:"likes"`
+	NumberOfLikes    int       `json:"numberOfLikes"`
 }
 
-
-
-
-// Profile structure and function to pass object to and from different packages 
+// Profile structure and function to pass object to and from different packages
 type User struct {
-	User_ID        string  `json:"user_id"`
-	Username       string  `json:"username"`
+	User_ID  string `json:"user_id"`
+	Username string `json:"username"`
 }
 
 type Profile struct {
-	User 			User   `json:"user"`
-	Photos         []Post  `json:"photos"`
-	NumberOfPosts  int     `json:"numberOfPosts"`
-	UserFollowers  int     `json:"userFollowers"`
-	UserFollowing  int     `json:"userFollowing"`
+	User          User   `json:"user"`
+	Photos        []Post `json:"photos"`
+	NumberOfPosts int    `json:"numberOfPosts"`
+	UserFollowers int    `json:"userFollowers"`
+	UserFollowing int    `json:"userFollowing"`
 }
 
 func (u *User) UserFromDataBase(user database.User) {
@@ -86,12 +83,12 @@ func (u *User) UserFromDataBase(user database.User) {
 	u.Username = user.Username
 }
 
-// function to pass object to and from different packages 
+// function to pass object to and from different packages
 
 func (p *Post) PostToDataBase() database.Post {
 	return database.Post{
-		User_ID: p.User_ID,
-		Post_ID: p.Post_ID,
+		User_ID:  p.User_ID,
+		Post_ID:  p.Post_ID,
 		Uploaded: p.Uploaded,
 		Image: database.Image{
 			Image: p.Image.Image, // Access the Image field within p.Image
@@ -121,7 +118,6 @@ func (p *Post) PostFromDataBase(dbPost database.Post) {
 		p.Likes = append(p.Likes, apiLike)
 	}
 }
-
 
 // GetPhotosFromDatabase converts a list of database.Post objects to a list of api.Post objects
 func GetPhotosFromDatabase(dbPhotos []database.Post) []Post {
@@ -156,17 +152,17 @@ func GetPhotosFromDatabase(dbPhotos []database.Post) []Post {
 
 // Following structure and fucntion to pass pbjects to and from different packages
 type FollowRequest struct {
-    FollowedID       string `json:"followingID"`
-    FollowingUsername string `json:"followingUsername"`
+	FollowedID        string `json:"followingID"`
+	FollowingUsername string `json:"followingUsername"`
 }
 
-// Band structure 
+// Band structure
 
 type MuteRequest struct {
-	MutedUserID string 
+	MutedUserID string
 }
 
-// Stream 
+// Stream
 
 type Stream struct {
 	Photos []Post `json:"photos"`

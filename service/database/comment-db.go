@@ -1,8 +1,7 @@
 package database
 
-import (
-	
-)
+import ()
+
 func (db *appdbimpl) GetComment(commentid string) (Comment, error) {
 	var comment Comment
 	err := db.c.QueryRow(`SELECT * FROM comments WHERE comment_id = ?`, commentid).Scan(&comment.Post_ID, &comment.Comment_ID, &comment.User_ID)
@@ -12,15 +11,15 @@ func (db *appdbimpl) GetComment(commentid string) (Comment, error) {
 	return comment, nil
 }
 
-func (db *appdbimpl) SetComment(comment Comment) (error) {
+func (db *appdbimpl) SetComment(comment Comment) error {
 	_, err := db.c.Exec(`INSERT INTO comments (post_id, comment_id, user_id, body)`, comment.Post_ID, comment.Comment_ID, comment.User_ID, comment.Body)
 	if err != nil {
 		return err
 	}
 	return nil
-} 
+}
 
-func (db *appdbimpl) RemoveComment(commentid string) (error) {
+func (db *appdbimpl) RemoveComment(commentid string) error {
 	_, err := db.c.Exec(`DELETE FROM comments WHERE 	comment_id = ? `, commentid)
 	if err != nil {
 		return err
@@ -48,7 +47,7 @@ func (db *appdbimpl) GetComments(postid string) ([]Comment, error) {
 			&comment.Body,
 		)
 		if err != nil {
-			
+
 			continue
 		}
 		comments = append(comments, comment)
@@ -61,4 +60,3 @@ func (db *appdbimpl) GetComments(postid string) ([]Comment, error) {
 
 	return comments, nil
 }
-

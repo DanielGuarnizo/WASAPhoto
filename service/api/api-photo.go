@@ -1,31 +1,30 @@
-package api 
+package api
 
 import (
-	"github.com/julienschmidt/httprouter"
-	"net/http"
+	"database/sql"
 	"encoding/json"
 	"errors"
-	"database/sql"
+	"github.com/julienschmidt/httprouter"
+	"net/http"
 )
-
 
 func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
-	
-	// get from the path the userid and handle error 
+
+	// get from the path the userid and handle error
 	userid := ps.ByName("userid")
 	if userid == "" {
 		rt.baseLogger.Warning("the userid in the path is empty")
 		w.WriteHeader(http.StatusBadRequest)
-		return 
+		return
 	}
-	// Authentication 
-	authorized := Authentication(w,r,userid)
-	if authorized == false{
-		return 
+	// Authentication
+	authorized := Authentication(w, r, userid)
+	if authorized == false {
+		return
 	}
 
-	// create a variable post to parse the data passed in the request body 
+	// create a variable post to parse the data passed in the request body
 	var p Post
 
 	// Read and parse the JSON data from the request body into a Post object.
@@ -34,22 +33,22 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		rt.baseLogger.WithError(err).Warning("Invalid JSON format")
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "bad request body"})
-		return 
+		return
 	}
-	
-	// defer closing the request body
-    defer r.Body.Close()
 
-	// Generate a new unique ID for the like 
+	// defer closing the request body
+	defer r.Body.Close()
+
+	// Generate a new unique ID for the like
 	postid := generateUniqueID()
 	newpost := Post{
-		User_ID: userid,
-		Post_ID: postid,
+		User_ID:  userid,
+		Post_ID:  postid,
 		Uploaded: p.Uploaded,
-		Image: p.Image,
+		Image:    p.Image,
 	}
 
-	// Save the new post in the database 
+	// Save the new post in the database
 	err = rt.db.UploadPhoto(newpost.PostToDataBase())
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error saving post into database")
@@ -86,17 +85,17 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		// Handle the case when "likeid" is not present in the request.
 		rt.baseLogger.Warning("the postid in the path is empty")
 		w.WriteHeader(http.StatusBadRequest)
-		return 
+		return
 	}
 
-	userid,_ := rt.db.GetUserIDForPost(postid)
-	// Authentication 
-	authorized := Authentication(w,r,userid)
-	if authorized == false{
-		return 
+	userid, _ := rt.db.GetUserIDForPost(postid)
+	// Authentication
+	authorized := Authentication(w, r, userid)
+	if authorized == false {
+		return
 	}
 
-	// Remove from the database the post given the postid 
+	// Remove from the database the post given the postid
 	err := rt.db.DeletePhoto(postid)
 	if err != nil {
 		// check it the err is of the same type of sql.ErrNoRows
