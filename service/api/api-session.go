@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"WASAPhoto/service/api/reqcontext"
 )
 
-func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
 	// Parse the JSON request body into a User object
 	var user User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {

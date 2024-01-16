@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"WASAPhoto/service/api/reqcontext"
 )
 
 // var Comments = []Comment{
@@ -21,7 +22,7 @@ import (
 // 	},
 // }
 
-func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("content-type", "application/json")
 
 	var comment Comment
@@ -84,7 +85,7 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 
 }
 
-func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) uncommentPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("content-type", "application/json")
 
 	commentid := ps.ByName("commentid")

@@ -7,6 +7,7 @@ import (
 
 	"database/sql"
 	"errors"
+	"WASAPhoto/service/api/reqcontext"
 )
 
 type JSONErrorMsg struct {
@@ -16,7 +17,7 @@ type JSONErrorMsg struct {
 // add a like in the post of another user
 // ps are the parameters passed by the URL path, the package httprouter will retrieve those values in the path
 // ctx is a contect object, is a way of passing data accross API boundaries
-func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	// Specify the content-type the server will return to the client
 	w.Header().Set("Content-Type", "application/json")
 
@@ -80,7 +81,7 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 	}
 }
 
-func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
 	likeid := ps.ByName("likeid")
