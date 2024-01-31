@@ -11,6 +11,7 @@ import (
 
 func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
+	rt.baseLogger.Warning("Enter in the uploadPhoto function")
 
 	// get from the path the userid and handle error
 	userid := ps.ByName("userid")
@@ -39,14 +40,23 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// defer closing the request body
 	defer r.Body.Close()
-
 	// Generate a new unique ID for the like
 	postid := generateUniqueID()
+
+	// Save the image to the file system
+	imagePath, err := saveImageToFileSystem(postid, p.Image)
+	if err != nil {
+		rt.baseLogger.WithError(err).Warning("Error saving image to file system")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
+		return
+	}
+
 	newpost := Post{
 		User_ID:  userid,
 		Post_ID:  postid,
 		Uploaded: p.Uploaded,
-		Image:    p.Image,
+		Image:    imagePath,
 	}
 
 	// Save the new post in the database

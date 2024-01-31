@@ -11,7 +11,7 @@ import (
 func applyCORSHandler(h http.Handler) http.Handler {
 	return handlers.CORS(
 		handlers.AllowedHeaders([]string{
-			"x-example-header",
+			"content-type", "X-Requested-With", "Authorization",
 		}),
 		handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS", "DELETE", "PUT"}),
 		// Do not modify the CORS origin and max age, they are used in the evaluation.
@@ -19,3 +19,5 @@ func applyCORSHandler(h http.Handler) http.Handler {
 		handlers.MaxAge(1),
 	)(h)
 }
+
+// Content-Type : to add headers 

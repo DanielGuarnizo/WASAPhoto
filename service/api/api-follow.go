@@ -1,4 +1,4 @@
-package api
+package api 
 
 import (
 	"database/sql"
@@ -7,11 +7,12 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"WASAPhoto/service/api/reqcontext"
+	
 )
 
 func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
-
+	
 	userid := ps.ByName("userid")
 	// to handle the error if the request wa made in a wrong way
 	if userid == "" {
@@ -40,7 +41,7 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 	defer r.Body.Close()
 
 	// Save into the database the relation between the follower(userid) and the
-	//followed(property of the object pass into the request body)
+	// followed(property of the object pass into the request body)
 	err = rt.db.SetFollow(userid, followReq.FollowedID)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error saving follow into database")

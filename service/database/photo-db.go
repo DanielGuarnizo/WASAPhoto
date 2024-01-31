@@ -37,7 +37,7 @@ func (db *appdbimpl) GetPhotos(userid string) ([]Post, error) {
 			&post.User_ID,
 			&post.Post_ID,
 			&post.Uploaded,
-			&post.Image.Image, // Assuming Image is a string column in the database
+			&post.Image, // Assuming Image is a string column in the database
 			&post.NumberOfComments,
 			&post.NumberOfLikes,
 		)

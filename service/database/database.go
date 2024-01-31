@@ -49,15 +49,15 @@ type Comment struct {
 	Body       string `json:"body"`
 }
 
-type Image struct {
-	Image string `json:"image"`
-}
+// type Image struct {
+// 	Image string `json:"image"`
+// }
 
 type Post struct {
 	User_ID          string    `json:"user_id"`
 	Post_ID          string    `json:"post_id"`
 	Uploaded         string    `json:"uploaded"`
-	Image            Image     `json:"image"`
+	Image            string    `json:"image"`
 	Comments         []Comment `json:"comments"`
 	NumberOfComments int       `json:"numberOfComments"`
 	Likes            []Like    `json:"likes"`
@@ -94,6 +94,7 @@ type AppDatabase interface {
 	// User methods
 	SetUsername(string, string) (User, error)
 	GetUserByName(string) (User, error)
+	GetName(string) (string, error)
 	CreateUser(string, string) error
 
 	// photo methods
@@ -111,6 +112,7 @@ type AppDatabase interface {
 	GetFollowing(string) ([]string, error)
 
 	// band methods
+	GetBans(string) ([]string, error)
 	BandUser(string, string) error
 	UnbandUser(string, string) error
 
@@ -138,8 +140,11 @@ func New(db *sql.DB) (AppDatabase, error) {
 
 	// Check if table exists. If not, the database is empty, and we need to create the structure
 	var tableName string
-	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='users';`).Scan(&tableName)
+	err = db.QueryRow(`SELECT username FROM sqlite_master WHERE type='table' AND name='users';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
+
+		fmt.Println("enter to create tthe tables ")
+
 		// here we will go to define the structure of the tables in my database
 		usersTable := `CREATE TABLE IF NOT EXISTS users (
 			user_id string NOT NULL,

@@ -24,7 +24,7 @@ func (db *appdbimpl) GetUserByName(username string) (User, error) {
 }
 
 func (db *appdbimpl) CreateUser(newUserid string, username string) error {
-	_, err := db.c.Exec(`INSERT INTO users (?,?) VALUES (?,?)`, newUserid, username)
+	_, err := db.c.Exec(`INSERT INTO users (user_id,username) VALUES (?,?)`, newUserid, username)
 	if err != nil {
 		return err
 	}

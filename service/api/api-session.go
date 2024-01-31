@@ -1,15 +1,22 @@
 package api
 
 import (
-	"encoding/json"
-	"github.com/julienschmidt/httprouter"
-	"net/http"
 	"WASAPhoto/service/api/reqcontext"
+	"database/sql"
+	"encoding/json"
+	"net/http"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
 	// Parse the JSON request body into a User object
-	var user User
+	rt.baseLogger.Warning("Enter in the session function")
+
+	type Body struct {
+		Username string
+	}
+	var user Body
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		rt.baseLogger.WithError(err).Warning("Invalid JSON format")
 		w.WriteHeader(http.StatusBadRequest)
@@ -18,14 +25,10 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 
 	// Check if the user already exists in your system
 	existingUser, err := rt.db.GetUserByName(user.Username)
-	if err != nil {
-		rt.baseLogger.WithError(err).Warning("Error checking if user exists")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	rt.baseLogger.Warning(existingUser.User_ID)
 
 	// If the user doesn't exist, create a new user and return the identifier
-	if existingUser.Username == "" {
+	if err == sql.ErrNoRows {
 		// Generate a new unique ID  for the user
 		newUserid := generateUniqueID()
 

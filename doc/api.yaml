@@ -77,19 +77,19 @@ components:
         user_id: 
           $ref: "#/components/schemas/ID"
 
-    Image:
-      title: image of a post 
-      description: |-
-        An images regargly an user, such image will be the main component of an user post 
-      type: object 
-      properties:
-        image:
-          type: string
-          description: "Binary representation of a image"
-          format: base64
-          pattern: '^[a-zA-Z0-9+/]*={0,2}$'
-          minLength: 1  
-          maxLength: 1048576
+    # Image:
+    #   title: image of a post 
+    #   description: |-
+    #     An images regargly an user, such image will be the main component of an user post 
+    #   type: object 
+    #   properties:
+    #     image:
+    #       type: string
+    #       description: "Binary representation of a image"
+    #       format: base64
+    #       pattern: '^[a-zA-Z0-9+/]*={0,2}$'
+    #       minLength: 1  
+    #       maxLength: 1048576
           
     Post:
       title: Post of an user on his profile 
@@ -116,7 +116,13 @@ components:
         
         # the main object of this app are the image
         image:
-          $ref: "#/components/schemas/Image"
+          # $ref: "#/components/schemas/Image"
+          type: string
+          description: "Binary representation of a image"
+          format: base64
+          pattern: '^[a-zA-Z0-9+/]*={0,2}$'
+          minLength: 1  
+          maxLength: 1048576
         
         # collecttion of possible comments the post could have (i am not sure if thsi part have to be in the properties)
         comments:
@@ -223,6 +229,26 @@ components:
           minItems: 0
           maxItems: 2000
 
+    UserList:
+      title: UserList
+      type: object
+      description: |-
+        A list of users, used to return the list of followers and following of a user.
+      properties:
+        users:
+          type: array
+          description: The list of users
+          minItems: 0
+          maxItems: 4294967295
+          items:
+            type: string
+            description: "username of the interesting profile"
+            example: "Daniel"
+            pattern: "^.*?$"
+            minLength: 3 
+            maxLength: 16
+          
+
 tags: 
   - name: Posts
     description: requests made in posts of users 
@@ -234,7 +260,7 @@ tags:
 paths:
   # DO LOGING
   /session: 
-    post:
+    put:
       tags: ["login"]
       summary: Logs in the user 
       description: |-
@@ -269,6 +295,10 @@ paths:
                     # change here if you decide to use an integer # or any other type of identifier
                     #type: string
                     #example: 1a2b3c4d5e6f7A8B9C0D1E2F3A4B5C6D
+        '400':
+          description: Bad request. Invalid user data.
+        '500':
+          description: Internal server error.
                     
   
   # LIKE PHOTO
@@ -464,13 +494,13 @@ paths:
   # UPLOAD PHOTO 
   # the user want to upload a post/photo to his profile 
   /users/{userid}/posts:
-    post:
+    put:
       security: 
         - bearerAuth: []
       tags: 
         - Profile
         - Users
-      operationId: uploadPost
+      operationId: uploadPhoto
       summary: upload post to profile
       description: |-
         user want to upload a new post to it's own profile 
@@ -662,8 +692,8 @@ paths:
           
   # BAND USER
   # here we create a collection of muted user for a particular userid    
-  /users/{userid}/muted/:    
-  # /users/{userid}/muted/{muteduserid}:
+  /users/{userid}/bans/{username}:    
+  # /users/{userid}/bans/{username}:
     post:
       security: 
         - bearerAuth: []
@@ -672,37 +702,29 @@ paths:
       operationId: banUser 
       summary: an user band another user
       description: |-
-        Mutes another user, preventing them from interacting with the specified user.
+        Ban's another user, preventing them from interacting with the specified user.
       parameters:
         - name: userid
           in: path
-          description: ID of the user who wants to mute another user.
+          description: ID of the user who wants to ban another user.
           required: true
           schema:
             $ref: "#/components/schemas/ID"
-            
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              description: "ID of the user to be muted."
-              properties:
-                mutedUserId:
-                  # ID of the user to be muted.
-                  $ref: "#/components/schemas/ID"
+        - name: username
+          in: path
+          description: username to search for 
+          required: true
+          schema:
+            type: string
+            description: "username of the banished user"
+            example: "Daniel"
+            pattern: "^.*?$"
+            minLength: 3 
+            maxLength: 16
+
       responses:
-        '201':
-          description: User muted successfully.
-          content:
-            application/json:
-              schema:
-                type: object
-                description: "the userid of the muted person"
-                properties:
-                  mutedUserId:
-                    # ID of the user to be muted.
-                    $ref: "#/components/schemas/ID"
+        '204':
+          description: User baned successfully.
 
         '400':
             description: Bad request. Invalid user data.
@@ -716,7 +738,6 @@ paths:
 
   # UNBAND USER
   # here we want to unmute an user from the muted collection 
-  /users/{userid}/muted/{mutedUserid}:
     delete:
       security:
         - bearerAuth: []
@@ -725,33 +746,89 @@ paths:
       operationId: unbanUser
       summary: an user unban another user 
       description: |-
-        Allows a user to unmute another user, allowing them to interact again.
+        Allows a user to unban another user, allowing them to interact again.
       parameters:
         - name: userid
           in: path
-          description: ID of the user who wants to unmute another user.
+          description: ID of the user who wants to unban another user.
           required: true
           schema:
             $ref: "#/components/schemas/ID"
-        - name: mutedUserid
+        - name: username
           in: path
-          description: ID of the user to be unmuted.
+          description: username to search for 
           required: true
           schema:
-            $ref: "#/components/schemas/ID"
+            type: string
+            description: "username of the banished user"
+            example: "Daniel"
+            pattern: "^.*?$"
+            minLength: 3 
+            maxLength: 16
+
       responses:
         '204':
           description: User unmuted successfully.
         '400':
             description: Bad request. Invalid user data.
-            
         '401':
             $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found or not muted.
         '500':
           description: Internal server error.  
+
+  # GETBANS OF AN USER 
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Users
+        - Profiles
+      operationId: getUserBans
+      summary: get the user bans 
+      description: |-
+        and user get the user baned by an user by name 
+      parameters:
+        - name: userid
+          in: path
+          description: user id who is looking for another user 
+          schema:
+            $ref: "#/components/schemas/ID"
+          required: true
           
+        - name: username
+          in: path
+          description: username to search for 
+          schema:
+            type: string
+            description: "username of the interesting profile"
+            example: "Daniel"
+            pattern: "^.*?$"
+            minLength: 3 
+            maxLength: 16
+          required: true
+
+      responses:
+        # we use 200 instead of 201 because we are not creating a resource and we are just safistying a request
+        "200":
+          description: |-
+            The list of users banned by the user.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+
+        '400':
+            description: Bad request. Invalid user data.
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: No user profiles found for the provided username.
+        '500':
+          description: Internal server error.
+
+
   # GET USER PROFILE 
   # we use the path , without including the query parameters directly in the path, 
   #it should be done when an user makes a request to search an user e.g  /users/{userid}/profile?username=desiredUsername
@@ -780,7 +857,10 @@ paths:
           schema:
             type: string
             description: "username of the interesting profile"
+            example: "Daniel"
             pattern: "^.*?$"
+            minLength: 3 
+            maxLength: 16
           required: true
           
       responses:
@@ -836,3 +916,4 @@ paths:
           description: No user profiles found for the provided username.
         '500':
           description: Internal server error.
+

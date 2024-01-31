@@ -48,16 +48,16 @@ func (c *Comment) CommentFromDataBase(comment database.Comment) {
 }
 
 // Image represents an image of a post
-type Image struct {
-	Image string `json:"image"`
-}
+// type Image struct {
+// 	Image string `json:"image"`
+// }
 
 // Post represents a user's post on their profile
 type Post struct {
 	User_ID          string    `json:"user_id"`
 	Post_ID          string    `json:"post_id"`
 	Uploaded         string    `json:"uploaded"`
-	Image            Image     `json:"image"`
+	Image            string    `json:"image"`
 	Comments         []Comment `json:"comments"`
 	NumberOfComments int       `json:"numberOfComments"`
 	Likes            []Like    `json:"likes"`
@@ -90,9 +90,7 @@ func (p *Post) PostToDataBase() database.Post {
 		User_ID:  p.User_ID,
 		Post_ID:  p.Post_ID,
 		Uploaded: p.Uploaded,
-		Image: database.Image{
-			Image: p.Image.Image, // Access the Image field within p.Image
-		},
+		Image: 		p.Image,
 	}
 }
 
@@ -102,7 +100,7 @@ func (p *Post) PostFromDataBase(dbPost database.Post) {
 	p.Uploaded = dbPost.Uploaded
 
 	// Convert the database.Image to api.Image
-	p.Image.Image = dbPost.Image.Image
+	p.Image = dbPost.Image
 
 	// Convert the list of database.Comment to api.Comment
 	for _, dbComment := range dbPost.Comments {
