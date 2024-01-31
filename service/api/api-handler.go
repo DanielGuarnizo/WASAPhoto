@@ -14,7 +14,6 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.DELETE("/comments/:commentid", rt.wrap(rt.uncommentPhoto))
 	rt.router.PATCH("/users/:userid", rt.wrap(rt.setMyUserName))
 
-	rt.baseLogger.Warning("Registering route: /users/:userid/posts prima prima")
 	rt.router.PUT("/users/:userid/posts", rt.wrap(rt.uploadPhoto))
 	// TODO remember fix the filesysteme
 	rt.router.DELETE("/users/:userid/posts/:postid", rt.wrap(rt.deletePhoto))

@@ -113,7 +113,7 @@ type AppDatabase interface {
 
 	// band methods
 	GetBans(string) ([]string, error)
-	BandUser(string, string) error
+	BandUser(string, string, string) error
 	UnbandUser(string, string) error
 
 	// the name of the parameter is up to the implementation of the interface
@@ -137,13 +137,16 @@ func New(db *sql.DB) (AppDatabase, error) {
 	if err != nil {
 		return nil, err
 	}
+	//fmt.Println("fuori il if del database")
 
 	// Check if table exists. If not, the database is empty, and we need to create the structure
-	var tableName string
-	err = db.QueryRow(`SELECT username FROM sqlite_master WHERE type='table' AND name='users';`).Scan(&tableName)
-	if errors.Is(err, sql.ErrNoRows) {
+	// var tableName string
+	// err = db.QueryRow(`SELECT username FROM sqlite_master WHERE type='table' AND name='users';`).Scan(&tableName)
+	var create = true
+	// if errors.Is(err, sql.ErrNoRows) {
+	if create {
 
-		fmt.Println("enter to create tthe tables ")
+		//fmt.Println("enter to create the tables ")
 
 		// here we will go to define the structure of the tables in my database
 		usersTable := `CREATE TABLE IF NOT EXISTS users (
@@ -187,8 +190,8 @@ func New(db *sql.DB) (AppDatabase, error) {
 		bansTable := `CREATE TABLE IF NOT EXISTS bans (
 			banisher string NOT NULL,
 			banished string NOT NULL,
-			FOREIGN KEY (banisher) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-			FOREIGN KEY (banished) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+			user_id string NOT NULL,
+			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
 		);`
 
 		followersTable := `CREATE TABLE IF NOT EXISTS followers (

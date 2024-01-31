@@ -25,7 +25,7 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 
 	// Check if the user already exists in your system
 	existingUser, err := rt.db.GetUserByName(user.Username)
-	rt.baseLogger.Warning(existingUser.User_ID)
+	// /rt.baseLogger.Warning(existingUser.User_ID)
 
 	// If the user doesn't exist, create a new user and return the identifier
 	if err == sql.ErrNoRows {

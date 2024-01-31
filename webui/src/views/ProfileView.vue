@@ -2,34 +2,40 @@
 export default {
     data: function() {
         return {
-            errormsg:false,
-            baned:false,
+            errormsg:null,
             exits: false,
-            baned_by: true,
-            searchUsername: localStorage.getItem("searhUsername") || "DefaultUsername",
-            username: localStorage.getItem("username"),
+            baned_by: false,
+            searchUsername: localStorage.getItem("searchUsername") || "DefaultUsername",
+            usernameLogin: localStorage.getItem("usernameLogin"),
             token: localStorage.getItem("token")
         }
     }, 
     methods: {
         async checkBan() {
             // verify if the user with userid can is baned or not from the user with username
+            console.log("before the try catch of checkBan")
             try {
                 let response = await this.$axios.get(`/users/${this.token}/bans/${this.searchUsername}`)
                 const UserList = response.data;
+                console.log("insede the try of checkBan")
+                console.log(response.data)
 
                 // Check is the username is in the list 
                 if (UserList === null) {
+                    this.baned_by = false 
                     return 
                 }
-                baned = UserList.includes(username);
-                if(baned) {
+                
+                this.baned_by = UserList.includes(this.usernameLogin);
+                console.log("result of the baned operation", this.baned_by)
+                if(this.baned_by) {
                     return 
                 } else {
                     getUserProfile()
                 }
                 
             } catch (e) {
+                console.log("inside the catch of checkBan")
                 if (e.response && e.response.status === 400) {
                     this.errormsg = "Bad reques. Invalid user data";
                     this.detailedmsg = null;
@@ -44,7 +50,12 @@ export default {
         },
 
         async getUserProfile() {
+            try {
+                let reponses = await this.$axios.get(`/users/${this.token}/profile?username=${this.searchUsername}`)
 
+            } catch {
+
+            }
         },
 
     },
@@ -56,13 +67,13 @@ export default {
 </script>
 
 <template>
-    <Baned v-if="baned" :msg="this.username"></Baned>
+    <Baned v-if="baned_by" :msg="this.searchUsername"></Baned>
     <div v-else id="personal information">
         <div>
-            <p>This is {{ this.username }} profile </p>
+            <p>This is {{ this.searchUsername }} profile </p>
         </div>
     </div>
-    <ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
+    <ErrorMsg v-if="this.errormsg" :msg="this.errormsg"></ErrorMsg>
 </template>
 
 <style>

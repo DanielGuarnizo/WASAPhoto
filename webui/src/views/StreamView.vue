@@ -4,7 +4,7 @@ export default {
         return {
             errormsg: null,
             searchUsername: "",
-            username: localStorage.getItem("username") || "DefaultUsername",
+            usernameLogin: localStorage.getItem("usernameLogin") || "DefaultUsername",
             token: localStorage.getItem("token")
         }
     },
@@ -15,7 +15,7 @@ export default {
             } else {
                 try {
                     //let response = await this.$axios.get(`/users/${this.token}/profile?username=${u}`)
-                    localStorage.setItem("searhUsername", u)
+                    localStorage.setItem("searchUsername", u)
                     this.$router.push(`/users/${this.token}/profile?username=${u}`)
                 } catch {
 
@@ -45,13 +45,13 @@ export default {
                 aria-label="Recipient's username"
                 aria-describedby="basic-addon2">
             <div class="input-group-append">
-                <button class="btn btn-success" type="button" @click="getProfile(searchUsername)">Search </button>
+                <button class="btn btn-success" type="button" @click="getProfile(this.searchUsername)">Search </button>
             </div>
         </div>
 
         <div>
-            <button @click="getProfile(this.username)" >
-                     <p>{{ this.username }} profile</p>
+            <button @click="getProfile(this.usernameLogin)" >
+                     <p>{{ this.usernameLogin }} profile</p>
             </button>
         </div>
     </div>

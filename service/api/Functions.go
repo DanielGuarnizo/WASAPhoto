@@ -19,9 +19,8 @@ func generateUniqueID() string {
 }
 
 func Authentication(w http.ResponseWriter, r *http.Request, reqUserid string) bool {
-	// userToken := r.Header.Get("Authorization")
-	//if userToken != reqUserid || userToken == "" {
-	if 1 == 1 {
+	userToken := r.Header.Get("Authorization")
+	if userToken != reqUserid || userToken == "" {
 		handleUnauthorizedError(w)
 		return false
 	} else {

@@ -1,5 +1,7 @@
 package database
 
+import "fmt"
+
 func (db *appdbimpl) SetUsername(newname string, userid string) (User, error) {
 	var user User
 	_, err := db.c.Exec(`UPDATE users SET username = ? WHERE user_id = ? `, newname, userid)
@@ -26,7 +28,7 @@ func (db *appdbimpl) GetUserByName(username string) (User, error) {
 func (db *appdbimpl) CreateUser(newUserid string, username string) error {
 	_, err := db.c.Exec(`INSERT INTO users (user_id,username) VALUES (?,?)`, newUserid, username)
 	if err != nil {
-		return err
+		return fmt.Errorf("error executing SQL query: %w", err)
 	}
 	return nil
 }

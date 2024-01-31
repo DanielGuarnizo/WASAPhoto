@@ -3,24 +3,24 @@ export default {
 	data: function() {
 		return {
 			errormsg: null,
-			username: "",
+			usernameLogin: "",
 			user: {
 				user_id: "",
-				username: this.username
+				username: this.usernameLogin
 			},
 		}
 	},
 	methods: {
 		async doLogin() {
-			if (this.username == "") {
+			if (this.usernameLogin == "") {
 				this.errormsg = "Username cannot be a empty string"
 			} else {
 				// we make use of the asyn-await here 
 				try {
-					let response = await this.$axios.post("/session", { username: this.username})
+					let response = await this.$axios.post("/session", { username: this.usernameLogin})
 					this.user.user_id = response.data.user_id
 					localStorage.setItem("token", this.user.user_id);
-                    localStorage.setItem("username", this.username);
+                    localStorage.setItem("usernameLogin", this.usernameLogin);
 										
 					this.$router.push(`/users/${this.user.user_id}/stream`)
 				} catch (e){
@@ -51,7 +51,7 @@ export default {
         <h1 class="h2">Welcome to WASAPhoto</h1>
     </div>
     <div class="input-group mb-3">
-        <input type="text" id="username" v-model="username" class="form-control"
+        <input type="text" id="username" v-model="usernameLogin" class="form-control"
             placeholder="Insert a username to log in WASAPhoto." aria-label="Recipient's username"
             aria-describedby="basic-addon2">
         <div class="input-group-append">

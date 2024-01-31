@@ -21,8 +21,8 @@ func (db *appdbimpl) GetBans(username string) ([]string, error) {
 	return UserList, nil
 }
 
-func (db *appdbimpl) BandUser(banisher string, banished string) error {
-	_, err := db.c.Exec(`INSERT INTO bans (banisher, banished) VALUES (?,?)`, banisher, banished)
+func (db *appdbimpl) BandUser(banisher string, banished string, userid string) error {
+	_, err := db.c.Exec(`INSERT INTO bans (banisher, banished, user_id) VALUES (?,?,?)`, banisher, banished, userid)
 	if err != nil {
 		return err
 	}

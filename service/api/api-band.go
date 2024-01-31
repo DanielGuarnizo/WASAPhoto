@@ -29,13 +29,13 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 	// Authentication
-	// authorized := Authentication(w, r, userid)
-	// if authorized == false {
-	// 	return
-	// }
+	authorized := Authentication(w, r, userid)
+	if authorized == false {
+		return
+	}
 
 	// Save into the database the baned relationship
-	err = rt.db.BandUser(banisher, banished)
+	err = rt.db.BandUser(banisher, banished, userid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error saving baned user into database")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -127,7 +127,7 @@ func (rt *_router) getUserBans(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// Write the encoded response to the response writer
 	w.WriteHeader(http.StatusOK)
-	rt.baseLogger.Warning(UserList)
+	// rt.baseLogger.Warning(UserList)
 	_, err = w.Write(response)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error writing response")
@@ -135,6 +135,6 @@ func (rt *_router) getUserBans(w http.ResponseWriter, r *http.Request, ps httpro
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
 		return
 	}
-	rt.baseLogger.Warning("if you see this is suppose the response was written correctly in the response body ")
+	// rt.baseLogger.Warning("if you see this is suppose the response was written correctly in the response body ")
 
 }
