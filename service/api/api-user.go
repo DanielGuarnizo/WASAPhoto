@@ -21,10 +21,10 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 	// Authentication
-	authorized := Authentication(w, r, userid)
-	if authorized == false {
-		return
-	}
+	// authorized := Authentication(w, r, userid)
+	// if authorized == false {
+	// 	return
+	// }
 
 	// read and parse the json data from the request body into an username upadate object
 	type UsernameUpdate struct {
@@ -88,6 +88,8 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	// retrieve the esential information to perfomr the operation
+
+	rt.baseLogger.Warning("enter in the get user profile")
 	userid := ps.ByName("userid")
 	username := r.URL.Query().Get("username")
 

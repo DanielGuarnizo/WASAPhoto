@@ -2,6 +2,8 @@ package database
 
 import (
 	"database/sql"
+	"io/ioutil"
+	"log"
 )
 
 func (db *appdbimpl) UploadPhoto(post Post) error {
@@ -48,6 +50,10 @@ func (db *appdbimpl) GetPhotos(userid string) ([]Post, error) {
 		// Populate the Comments and Likes lists
 		post.Comments, _ = db.GetComments(post.Post_ID)
 		post.Likes, _ = db.GetLikes(post.Post_ID)
+		post.Image, err = loadImageFromFileSystem(post.Image)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		posts = append(posts, post)
 	}
@@ -96,4 +102,17 @@ func (db *appdbimpl) GetUserIDForPost(postID string) (string, error) {
 	}
 
 	return User_ID, nil
+}
+
+func loadImageFromFileSystem(imagePath string) (string, error) {
+	// Read the image file
+	imageBytes, err := ioutil.ReadFile(imagePath)
+	if err != nil {
+		return "", err
+	}
+
+	// Convert image bytes to string
+	imageString := string(imageBytes)
+
+	return imageString, nil
 }

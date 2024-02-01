@@ -29,10 +29,11 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 	// Authentication
-	authorized := Authentication(w, r, userid)
-	if authorized == false {
-		return
-	}
+
+	// authorized := Authentication(w, r, userid)
+	// if authorized == false {
+	// 	return
+	// }
 
 	// Save into the database the baned relationship
 	err = rt.db.BandUser(banisher, banished, userid)
@@ -99,14 +100,14 @@ func (rt *_router) getUserBans(w http.ResponseWriter, r *http.Request, ps httpro
 	w.Header().Set("Content-Type", "application/json")
 	rt.baseLogger.Warning("enter in getUserBans")
 	// retrieve the esential information to perfomr the operation
-	//userid := ps.ByName("userid")
+	userid := ps.ByName("userid")
 	username := ps.ByName("username")
 
-	// Authentication
-	// authorized := Authentication(w, r, userid)
-	// if authorized == false {
-	// 	return
-	// }
+	//Authentication
+	authorized := Authentication(w, r, userid)
+	if authorized == false {
+		return
+	}
 
 	// Get the list of users fromdatabase
 	UserList, err := rt.db.GetBans(username)

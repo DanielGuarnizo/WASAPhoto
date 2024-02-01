@@ -37,7 +37,7 @@ export default {}
 					</ul>
 
 					<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
-						<span>Secondary menu</span>
+						<span>Special Operations</span>
 					</h6>
 					<ul class="nav flex-column">
 
