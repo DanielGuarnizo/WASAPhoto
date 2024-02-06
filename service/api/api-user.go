@@ -39,7 +39,7 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "bad request body"})
 		return
 	}
-
+	rt.baseLogger.Warning(update)
 	// defer closing the request body
 	defer r.Body.Close()
 
@@ -90,14 +90,14 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	// retrieve the esential information to perfomr the operation
 
 	rt.baseLogger.Warning("enter in the get user profile")
-	userid := ps.ByName("userid")
+	//userid := ps.ByName("userid")
 	username := r.URL.Query().Get("username")
 
 	// Authentication
-	authorized := Authentication(w, r, userid)
-	if authorized == false {
-		return
-	}
+	// authorized := Authentication(w, r, userid)
+	// if authorized == false {
+	// 	return
+	// }
 
 	// Get the user from the database given the username
 	var ReqUser User
@@ -128,7 +128,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 		profile.Photos = apiPhotos
 		profile.NumberOfPosts = len(apiPhotos)
 
-		count1, err := rt.db.GetNumberOfFollowers(ReqUser.User_ID)
+		count1, err := rt.db.GetNumberOfFollowers(ReqUser.Username)
 		if err != nil {
 			rt.baseLogger.WithError(err).Warning("Error getting number of followers from database")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -137,7 +137,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 		}
 		profile.UserFollowers = count1
 
-		count2, err := rt.db.GetNumberOfFollowing(ReqUser.User_ID)
+		count2, err := rt.db.GetNumberOfFollowing(ReqUser.Username)
 		if err != nil {
 			rt.baseLogger.WithError(err).Warning("Error getting number of following from database")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -173,21 +173,26 @@ func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httpro
 	w.Header().Set("Content-Type", "application/json")
 
 	userid := ps.ByName("userid")
-
-	// Authentication
-	authorized := Authentication(w, r, userid)
-	if authorized == false {
+	username, err := rt.db.GetName(userid)
+	if err != nil {
 		return
 	}
 
+	// Authentication
+	// authorized := Authentication(w, r, userid)
+	// if authorized == false {
+	// 	return
+	// }
+
 	// get the list of all the followees of the user given it's userid
-	followees, err := rt.db.GetFollowing(userid)
+	followees, err := rt.db.GetFollowing(username)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error retrieving followwes from  database")
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
 		return
 	}
+	rt.baseLogger.Warning(followees)
 
 	// get the list of lastest post of the following users given the user_id of each of them
 	// then it returns a list of post and we conver from database.Post type to api.Post type
@@ -198,8 +203,9 @@ func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httpro
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
 		return
 	}
+	rt.baseLogger.Warning(dblastPosts)
 	lastPosts := GetPhotosFromDatabase(dblastPosts)
-
+	rt.baseLogger.Warning(lastPosts)
 	// we constructe the stream
 	var stream Stream
 	stream.Photos = lastPosts

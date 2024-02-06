@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"io/ioutil"
 	"log"
 )
@@ -24,6 +25,7 @@ func (db *appdbimpl) DeletePhoto(postid string) error {
 
 func (db *appdbimpl) GetPhotos(userid string) ([]Post, error) {
 	// Execute the query to get posts for a given userid
+
 	query := "SELECT * FROM posts WHERE user_id = ?"
 	rows, err := db.c.Query(query, userid)
 	if err != nil {
@@ -50,6 +52,8 @@ func (db *appdbimpl) GetPhotos(userid string) ([]Post, error) {
 		// Populate the Comments and Likes lists
 		post.Comments, _ = db.GetComments(post.Post_ID)
 		post.Likes, _ = db.GetLikes(post.Post_ID)
+		post.NumberOfComments = len(post.Comments)
+		post.NumberOfLikes = len(post.Likes)
 		post.Image, err = loadImageFromFileSystem(post.Image)
 		if err != nil {
 			log.Fatal(err)
@@ -66,26 +70,74 @@ func (db *appdbimpl) GetPhotos(userid string) ([]Post, error) {
 	return posts, nil
 }
 
-func (db *appdbimpl) GetLastPosts(userIDs []string) ([]Post, error) {
-	var lastPosts []Post
+func (db *appdbimpl) GetLastPosts(usernames []string) ([]Post, error) {
 
-	for _, userID := range userIDs {
-		var post Post
-		err := db.c.QueryRow(`SELECT FROM posts WHERE user_id = ? ORDER BY uploaded DESC LIMIT 1`, userID).Scan(&post.User_ID, &post.Post_ID, &post.Uploaded, &post.Image, &post.NumberOfComments, &post.NumberOfLikes)
-		post.Comments, _ = db.GetComments(post.Post_ID)
-		post.Likes, _ = db.GetLikes(post.Post_ID)
+	var posts []Post
+	fmt.Println("inside the Getlast posts")
+	for _, username := range usernames {
+		// get userid given the username
+		var userid string
+		err := db.c.QueryRow("SELECT user_id FROM users WHERE username=?", username).Scan(&userid)
+
+		query := `SELECT * FROM posts WHERE user_id = ? ORDER BY uploaded DESC LIMIT 1`
+		rows, err := db.c.Query(query, userid)
 		if err != nil {
-			if err == sql.ErrNoRows {
-				// No posts found for the user so we pass to the next user id , because there is not an error
-				continue
-			}
 			return nil, err
 		}
+		defer rows.Close()
+		for rows.Next() {
+			var post Post
+			err := rows.Scan(
+				&post.User_ID,
+				&post.Post_ID,
+				&post.Uploaded,
+				&post.Image, // Assuming Image is a string column in the database
+				&post.NumberOfComments,
+				&post.NumberOfLikes,
+			)
+			if err != nil {
+				continue
+			}
 
-		lastPosts = append(lastPosts, post)
+			// Populate the Comments and Likes lists
+			post.Comments, _ = db.GetComments(post.Post_ID)
+			post.Likes, _ = db.GetLikes(post.Post_ID)
+			post.NumberOfComments = len(post.Comments)
+			post.NumberOfLikes = len(post.Likes)
+			post.Image, err = loadImageFromFileSystem(post.Image)
+			if err != nil {
+				log.Fatal(err)
+			}
 
+			posts = append(posts, post)
+		}
+
+		// var post Post
+		// err := db.c.QueryRow(`SELECT * FROM posts WHERE username = ? ORDER BY uploaded DESC LIMIT 1`, username).Scan(&post.User_ID, &post.Post_ID, &post.Uploaded, &post.Image, &post.NumberOfComments, &post.NumberOfLikes)
+		// fmt.Println(post)
+		// post.Comments, _ = db.GetComments(post.Post_ID)
+		// post.Likes, _ = db.GetLikes(post.Post_ID)
+		// post.NumberOfComments = len(post.Comments)
+		// post.NumberOfLikes = len(post.Likes)
+		// post.Image, err = loadImageFromFileSystem(post.Image)
+		// if err != nil {
+		// 	if err == sql.ErrNoRows {
+		// 		// No posts found for the user so we pass to the next user id , because there is not an error
+		// 		continue
+		// 	}
+		// 	return nil, err
+		// }
+
+		// lastPosts = append(lastPosts, post)
+
+		// Check for errors from iterating over rows
+		if err := rows.Err(); err != nil {
+			return nil, err
+		}
 	}
-	return lastPosts, nil
+
+	return posts, nil
+	//return lastPosts, nil
 }
 func (db *appdbimpl) GetUserIDForPost(postID string) (string, error) {
 	var User_ID string

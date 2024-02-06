@@ -10,6 +10,10 @@ export default {
             exits: false,
             banished: null,
             banisher: null,
+            follower: null,
+            selectedFile: null,
+            base64Image: null,
+            formattedDate: '',
             searchUsername: localStorage.getItem("searchUsername") || "DefaultUsername",
             usernameLogin: localStorage.getItem("usernameLogin"),
             token: localStorage.getItem("token"),
@@ -25,12 +29,19 @@ export default {
                 userFollowing: 0,
             },
             Posts: [],
+            Post: {
+                user_id: '',
+                post_id: '',
+                uploaded: '',
+                image: '',
+                comments: [],
+                numberOfComments: 0,
+                likes: [],
+                numberOfLikes: 0
+            }
         }
     }, 
     methods: {
-        async refresh() {
-            
-        },
         async checkIfBanisher() {
             try {
                 let response = await this.$axios.get(`/users/${this.token}/bans/${this.usernameLogin}`, {
@@ -99,25 +110,24 @@ export default {
         async getUserProfile() {
             console.log("inside the get user profile")
             try {
-                //console.log("get user profile try")
+                console.log("get user profile try")
                 let response = await this.$axios.get(`/users/${this.token}/profile?username=${this.searchUsername}`, {
                     headers: {
                         Authorization: this.token
                     }
                 })
                 this.profile = response.data
-                this.Posts = this.profile.photos                
-            } catch (e){
+                this.Posts = this.profile.photos  
+                console.log(`this are the post of the profile: ${this.Posts}`) 
+            } catch (e) {
                 console.log("get user profile catch ")
                 if (e.response && e.response.status === 400) {
                     this.errormsg = "Bad Request. invalid user data";
-                    this.detailedmsg = null;
                 } else if (e.response && e.response.status === 500) {
                     this.errormsg = "Internal server error occurred. Please try again later.";
-                    this.detailedmsg = e.toString();
                 } else {
+                    console.log("enter in the else of the get user profile")
                     this.errormsg = e.toString();
-                    this.detailedmsg = null;
                 }
             }
         },
@@ -178,30 +188,131 @@ export default {
         },
         async followUser() {
             try {
-                let response = await this.$axios.post()
+                const response = await this.$axios.put(`/users/${this.token}/follows/${this.searchUsername}`,
+                {
+                    headers: {
+                        Authorization: this.token
+                    } 
+                }
+                );
+                this.follower = true 
+                console.log(response.status);
+            } catch (error) {
+                // Handle errors
+                console.error(error);
+            }
+        },
+        async unfollowUser() {
+            try {
+                const response = await this.$axios.delete(`/users/${this.token}/follows/${this.searchUsername}`,
+                {
+                    headers: {
+                    'Authorization': `Bearer ${this.accessToken}`
+                    }
+                }
+                )
+                this.follower = false
+                console.log(response.status)
             } catch {
 
             }
         },
-        async unfollowUser() {},
+        async isFollower() {
+            try {
+                const response = await this.$axios.get(`/users/${this.token}/following`)
+                const UserList = response.data;
+                // Check is the username is in the list if empty then the serachUsername has not baned persons
+                if (UserList === null) {
+                    this.follower = false 
+                    return 
+                }
+                this.follower = UserList.includes(this.searchUsername);
+                
+                if(this.banisher) {
+                    return 
+                } else {
+                    return
+                }
+
+            } catch {
+
+            }
+        },
+        
+        onFileSelected(event) {
+            if (event.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.base64Image = e.target.result;
+                };
+                reader.readAsDataURL(event.target.files[0]);
+                
+            } else {
+                this.errormsg = "Select an image to upload to your profile";
+            }
+        },
+        async uploadPhoto() {
+            if (!this.base64Image) {
+                this.errormsg = "Select an image to upload to your profile";
+                return;
+            }
+
+            try {
+                let response = await this.$axios.put(`/users/${this.token}/posts`, 
+                {
+                    user_id: this.token,
+                    post_id: '',
+                    uploaded: this.formattedDate,
+                    image: this.base64Image,
+                    comments: [],
+                    numberOfComments: 0,
+                    likes: [],
+                    numberOfLikes: 0
+                }, 
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `${this.token}`
+                    }
+                });
+                this.errormsg = null;
+                this.$refs.fileInput.value = null;
+                this.base64Image = null;
+
+                this.getUserProfile();
+            } catch (error) {
+                // Handle errors
+                console.error(error);
+            }
+        },
     },
     mounted() {
         console.log("user profile Component is mounted")
         this.checkIfBanished()
         this.checkIfBanisher()
-
+        this.isFollower()
+        const currentDate = new Date();
+        this.formattedDate = currentDate.toISOString().slice(0, 19).replace('T', ' ');
     }, 
     computed: {
         Owner() {
             return this.searchUsername === this.usernameLogin
-        }
+        },
+
     }
 }
 </script>
 
 <template>
+    
+    
     <div v-if="Owner" class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 ">
-        <button class="btn btn-success" type="button" @click="uploadPhoto()"> Upload Photo </button>
+        <button class="btn btn-success" @click="this.uploadPhoto()" >
+            Upload Photo
+            <input ref="fileInput" type="file" @change="this.onFileSelected">
+
+        </button>
+        
         
         <input type="text" id="newUsername" v-model="this.newUsername" class="form-control"
         placeholder="Insert the new username" aria-label="Recipient's username"
@@ -227,13 +338,16 @@ export default {
             <div>
 
                 <h2 class="text-center border-bottom">{{ this.searchUsername }} Profile</h2>
-                <button v-if="!Owner" class="btn btn-success" type="button" @click="followUser()" > Follow </button>
-                <button v-else class="btn btn-success" type="button" @click="unfollowUser()" > UnFollow </button>
+                <div v-if="!Owner">
+
+                    <button v-if="!follower" class="btn btn-success" type="button" @click="followUser()" > Follow </button>
+                    <button v-else class="btn btn-success" type="button" @click="unfollowUser()" > UnFollow </button>
+                </div>
             </div>
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 ">
-                <p>Number of Posts</p>
-                <p>Number of Followers</p>
-                <p>Number of Followings</p>
+                <p>Number of Posts {{ this.profile.numberOfPosts }}</p>
+                <button @click="getFollowers">Number of Followers {{ this.profile.userFollowers }}</button>
+                <button @click="getFollowing">Number of Followings {{ this.profile.userFollowing }}</button>
                 
             </div>
             <Post v-for="post in Posts" :postData="post" />
@@ -250,4 +364,6 @@ export default {
   background-color: #fff;
   /* Add other styling for the post container */
 }
+
+
 </style>

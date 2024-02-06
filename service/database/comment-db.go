@@ -1,18 +1,7 @@
 package database
 
-import ()
-
-func (db *appdbimpl) GetComment(commentid string) (Comment, error) {
-	var comment Comment
-	err := db.c.QueryRow(`SELECT * FROM comments WHERE comment_id = ?`, commentid).Scan(&comment.Post_ID, &comment.Comment_ID, &comment.User_ID)
-	if err != nil {
-		return Comment{}, err
-	}
-	return comment, nil
-}
-
-func (db *appdbimpl) SetComment(comment Comment) error {
-	_, err := db.c.Exec(`INSERT INTO comments (post_id, comment_id, user_id, body)`, comment.Post_ID, comment.Comment_ID, comment.User_ID, comment.Body)
+func (db *appdbimpl) SetComment(postid string, commentid string, commenter string, userid string, body string) error {
+	_, err := db.c.Exec(`INSERT INTO comments (post_id, comment_id, commenter, user_id, body) VALUES (?,?,?,?,?)`, postid, commentid, commenter, userid, body)
 	if err != nil {
 		return err
 	}
@@ -20,7 +9,7 @@ func (db *appdbimpl) SetComment(comment Comment) error {
 }
 
 func (db *appdbimpl) RemoveComment(commentid string) error {
-	_, err := db.c.Exec(`DELETE FROM comments WHERE 	comment_id = ? `, commentid)
+	_, err := db.c.Exec(`DELETE FROM comments WHERE comment_id = ? `, commentid)
 	if err != nil {
 		return err
 	}
@@ -43,6 +32,7 @@ func (db *appdbimpl) GetComments(postid string) ([]Comment, error) {
 		err := rows.Scan(
 			&comment.Post_ID,
 			&comment.Comment_ID,
+			&comment.Commenter,
 			&comment.User_ID,
 			&comment.Body,
 		)

@@ -1,14 +1,50 @@
 <script>
+import Post from '@/components/Post.vue';
 export default {
+    components: {
+        Post
+    },
     data: function() {
         return {
             errormsg: null,
             searchUsername: "",
             usernameLogin: localStorage.getItem("usernameLogin") || "DefaultUsername",
-            token: localStorage.getItem("token")
+            token: localStorage.getItem("token"),
+            Stream: {
+                photos: []
+            },
+            Posts: [],
+            Post: {
+                user_id: '',
+                post_id: '',
+                uploaded: '',
+                image: '',
+                comments: [],
+                numberOfComments: 0,
+                likes: [],
+                numberOfLikes: 0
+            }
         }
     },
     methods: {
+        async getMyStream() {
+            try {
+                let response = await this.$axios.get(`/users/${this.token}/stream`)
+                // console.log(response)
+                this.Stream = response.data
+                // Assuming this.Stream.photos is an array of posts
+                this.Stream.photos.sort((a, b) => {
+                // Compare the timestamps or dates of the posts in reverse order
+                return new Date(b.uploaded) - new Date(a.uploaded);
+                });
+
+                // Assign the sorted posts to this.Posts
+                this.Posts = this.Stream.photos;
+               
+                console.log(`this are the post of the Stream: ${this.Posts}`) 
+            } catch (e) {
+            }
+        },
         async getProfile(u) {
             if (u == "") {
                 this.errormsg = "in such a way to search an user the Username cannot be a empty string"
@@ -22,9 +58,11 @@ export default {
                 }
             }
         },
+        
     },
     mounted() {
         console.log(' Stream Component is mounted!');
+        this.getMyStream()
     },
     created() {
         
@@ -55,8 +93,19 @@ export default {
             </button>
         </div>
     </div>
+    <div class="header-stream">
+
+        <Post v-for="post in this.Posts" :postData="post" />
+    </div>
     <ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 </template>
 
 <style>
+.header-stream {
+  border: 1px solid #ddd;
+  margin: 10px;
+  padding: 10px;
+  background-color: #fff;
+  /* Add other styling for the post container */
+}
 </style>

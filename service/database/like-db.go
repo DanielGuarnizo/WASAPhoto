@@ -1,26 +1,18 @@
 package database
 
-import ()
+import "fmt"
 
-func (db *appdbimpl) GetLike(likeid string) (like Like, err error) {
-	err = db.c.QueryRow(`SELECT * FROM likes WHERE like_id = ?`, likeid).Scan(&like.Post_ID, &like.Like_ID, &like.User_ID)
-	if err != nil {
-		return Like{}, err
-	}
-	return like, nil
-}
+func (db *appdbimpl) SetLike(postid string, liker string, userid string) error {
 
-func (db *appdbimpl) SetLike(like Like) error {
-
-	_, err := db.c.Exec(`INSERT INTO likes (post_id, like_id, user_id) VALUES (?,?,?)`, like.Post_ID, like.Like_ID, like.User_ID)
+	_, err := db.c.Exec(`INSERT INTO likes (post_id, liker, user_id) VALUES (?,?,?)`, postid, liker, userid)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (db *appdbimpl) RemoveLike(likeid string) error {
-	_, err := db.c.Exec(`DELETE FROM likes WHERE like_id = ?`, likeid)
+func (db *appdbimpl) RemoveLike(userid string, postid string) error {
+	_, err := db.c.Exec(`DELETE FROM likes WHERE user_id = ? AND post_id = ?`, userid, postid)
 	if err != nil {
 		return err
 	}
@@ -42,7 +34,7 @@ func (db *appdbimpl) GetLikes(postid string) ([]Like, error) {
 		var like Like
 		err := rows.Scan(
 			&like.Post_ID,
-			&like.Like_ID,
+			&like.Liker,
 			&like.User_ID,
 		)
 		if err != nil {
@@ -57,4 +49,26 @@ func (db *appdbimpl) GetLikes(postid string) ([]Like, error) {
 	}
 
 	return likes, nil
+}
+
+func (db *appdbimpl) GetLikers(postid string) ([]string, error) {
+	var UserList []string
+
+	query := `SELECT liker FROM likes WHERE post_id = ?`
+	rows, err := db.c.Query(query, postid)
+	if err != nil {
+		return UserList, err
+	}
+	defer rows.Close()
+	fmt.Println("execute the query")
+
+	// retrieve wors from wuery and put then in a list of strings
+	for rows.Next() {
+		var liker string
+		if err := rows.Scan(&liker); err != nil {
+			continue
+		}
+		UserList = append(UserList, liker)
+	}
+	return UserList, nil
 }

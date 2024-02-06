@@ -6,20 +6,21 @@ import (
 
 type Like struct {
 	Post_ID string `json:"post_id"`
-	Like_ID string `json:"like_id"`
+	Liker   string `json:"like_id"`
 	User_ID string `json:"user_id"` // Change from userId to UserID
 }
 
 func (l *Like) LikeToDataBase() database.Like {
 	return database.Like{
 		Post_ID: l.Post_ID,
+		Liker:   l.Liker,
 		User_ID: l.User_ID,
 	}
 }
 
 func (l *Like) LikeFromDataBase(like database.Like) {
 	l.Post_ID = like.Post_ID
-	l.Like_ID = like.Like_ID
+	l.Liker = like.Liker
 	l.User_ID = like.User_ID
 }
 
@@ -27,7 +28,8 @@ func (l *Like) LikeFromDataBase(like database.Like) {
 type Comment struct {
 	Post_ID    string `json:"post_id"`
 	Comment_ID string `json:"comment_id"`
-	User_ID    string `json:"user_id"` // Change from userId to UserID
+	Commenter  string `json:"commenter"`
+	User_ID    string `json:"user_id"`
 	Body       string `json:"body"`
 }
 
@@ -35,6 +37,7 @@ func (c *Comment) CommentToDataBase() database.Comment {
 	return database.Comment{
 		Post_ID:    c.Post_ID,
 		Comment_ID: c.Comment_ID,
+		Commenter:  c.Commenter,
 		User_ID:    c.User_ID,
 		Body:       c.Body,
 	}
@@ -43,6 +46,7 @@ func (c *Comment) CommentToDataBase() database.Comment {
 func (c *Comment) CommentFromDataBase(comment database.Comment) {
 	c.Post_ID = comment.Post_ID
 	c.Comment_ID = comment.Comment_ID
+	c.Commenter = comment.Commenter
 	c.User_ID = comment.User_ID
 	c.Body = comment.Body
 }
@@ -90,7 +94,7 @@ func (p *Post) PostToDataBase() database.Post {
 		User_ID:  p.User_ID,
 		Post_ID:  p.Post_ID,
 		Uploaded: p.Uploaded,
-		Image: 		p.Image,
+		Image:    p.Image,
 	}
 }
 
@@ -115,6 +119,16 @@ func (p *Post) PostFromDataBase(dbPost database.Post) {
 		apiLike.LikeFromDataBase(dbLike)
 		p.Likes = append(p.Likes, apiLike)
 	}
+}
+func GetCommentsFromDatabase(dbCommenst []database.Comment) []Comment {
+	var comments []Comment
+
+	for _, dbComment := range dbCommenst {
+		comment := Comment{}
+		comment.CommentFromDataBase(dbComment)
+		comments = append(comments, comment)
+	}
+	return comments
 }
 
 // GetPhotosFromDatabase converts a list of database.Post objects to a list of api.Post objects
@@ -142,6 +156,8 @@ func GetPhotosFromDatabase(dbPhotos []database.Post) []Post {
 		}
 
 		// Add the converted api.Post to the list
+		apiPhoto.NumberOfComments = dbPhoto.NumberOfComments
+		apiPhoto.NumberOfLikes = dbPhoto.NumberOfLikes
 		apiPhotos = append(apiPhotos, apiPhoto)
 	}
 
@@ -149,10 +165,10 @@ func GetPhotosFromDatabase(dbPhotos []database.Post) []Post {
 }
 
 // Following structure and fucntion to pass pbjects to and from different packages
-type FollowRequest struct {
-	FollowedID        string `json:"followingID"`
-	FollowingUsername string `json:"followingUsername"`
-}
+// type FollowRequest struct {
+// 	FollowerID       string `json:"followerID"`
+// 	FollowedUsername string `json:"followedUsername"`
+// }
 
 // Band structure
 

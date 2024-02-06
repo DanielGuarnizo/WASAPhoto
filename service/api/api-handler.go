@@ -13,11 +13,21 @@ func (rt *_router) Handler() http.Handler {
 	//? CHECKED
 	rt.router.PUT("/users/:userid", rt.wrap(rt.setMyUserName))
 
-	// LIKES AND COMMENT OPERATIONS
-	rt.router.POST("/likes/", rt.wrap(rt.likePhoto))
-	rt.router.DELETE("/likes/:likeid", rt.wrap(rt.unlikePhoto))
-	rt.router.POST("/comments/", rt.wrap(rt.commentPhoto))
-	rt.router.DELETE("/comments/:commentid", rt.wrap(rt.uncommentPhoto))
+	// LIKES OPERATIONS
+	//? CHECKED
+	rt.router.PUT("/users/:userid/posts/:postid/likes", rt.wrap(rt.likePhoto))
+	//? CHECKED
+	rt.router.GET("/users/:userid/posts/:postid/likes", rt.wrap(rt.getLikers))
+	//? CHECKED
+	rt.router.DELETE("/users/:userid/posts/:postid/likes", rt.wrap(rt.unlikePhoto))
+
+	// COMMENT OPERATIONS
+	//? CHECKED
+	rt.router.PUT("/comments", rt.wrap(rt.commentPhoto))
+	//? CHECKED
+	rt.router.DELETE("/users/:userid/posts/:postid/comments/:commentid", rt.wrap(rt.uncommentPhoto))
+	//? CHECKED
+	rt.router.GET("/users/:userid/posts/:postid/comments", rt.wrap(rt.getComments))
 
 	// make post into user profile
 	//? CHECKED
@@ -26,8 +36,14 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.DELETE("/users/:userid/posts/:postid", rt.wrap(rt.deletePhoto))
 
 	// follow functions
-	rt.router.POST("/users/:userid/following", rt.wrap(rt.followUser))
-	rt.router.DELETE("/users/:userid/following/:followedid", rt.wrap(rt.unfollowUser))
+	//? CHECKED
+	rt.router.PUT("/users/:userid/follows/:username", rt.wrap(rt.followUser))
+	//? CHECKED
+	rt.router.DELETE("/users/:userid/follows/:username", rt.wrap(rt.unfollowUser))
+	//? CHECKED
+	rt.router.GET("/users/:userid/following", rt.wrap(rt.getFollowing))
+	//? CHECKED
+	rt.router.GET("/users/:userid/followers", rt.wrap(rt.getFollowers))
 
 	// Bans funcitons
 	//? CHECKED

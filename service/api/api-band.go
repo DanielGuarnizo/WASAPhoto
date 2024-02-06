@@ -112,11 +112,11 @@ func (rt *_router) getUserBans(w http.ResponseWriter, r *http.Request, ps httpro
 	// Get the list of users fromdatabase
 	UserList, err := rt.db.GetBans(username)
 	if err != nil {
-		rt.baseLogger.WithError(err).Warning("Error retreaving user list")
+		rt.baseLogger.WithError(err).Warning("Error retreaving user list of bans")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	// UserList = "sto provando a salvare qualcosa"
+
 	// Encode the list of users  in to a variable before writing it to the response writer
 	response, err := json.Marshal(UserList)
 	if err != nil {

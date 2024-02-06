@@ -38,14 +38,15 @@ import (
 
 type Like struct {
 	Post_ID string `json:"post_id"`
-	Like_ID string `json:"like_id"`
-	User_ID string `json:"user_id"` // Change from userId to UserID
+	Liker   string `json:"liker"`
+	User_ID string `json:"user_id"`
 }
 
 type Comment struct {
 	Post_ID    string `json:"post_id"`
 	Comment_ID string `json:"comment_id"`
-	User_ID    string `json:"user_id"` // Change from userId to UserID
+	Commenter  string `json:"commenter"`
+	User_ID    string `json:"user_id"`
 	Body       string `json:"body"`
 }
 
@@ -82,14 +83,15 @@ type AppDatabase interface {
 	Ping() error
 
 	// like methods
-	GetLike(string) (Like, error)
-	SetLike(Like) error
-	RemoveLike(string) error
+	SetLike(string, string, string) error
+	RemoveLike(string, string) error
+	GetLikes(string) ([]Like, error)
+	GetLikers(string) ([]string, error)
 
 	// Commemt methods
-	GetComment(string) (Comment, error)
-	SetComment(Comment) error
+	SetComment(string, string, string, string, string) error
 	RemoveComment(string) error
+	GetComments(string) ([]Comment, error)
 
 	// User methods
 	SetUsername(string, string) (User, error)
@@ -100,16 +102,20 @@ type AppDatabase interface {
 	// photo methods
 	UploadPhoto(Post) error
 	DeletePhoto(string) error
-	GetUserIDForPost(string) (string, error)
 	GetPhotos(string) ([]Post, error)
 	GetLastPosts([]string) ([]Post, error)
+	GetUserIDForPost(string) (string, error)
 
 	// follow methods
-	SetFollow(string, string) error
+	SetFollow(string, string, string) error
 	RemoveFollow(string, string) error
 	GetNumberOfFollowers(string) (int, error)
 	GetNumberOfFollowing(string) (int, error)
 	GetFollowing(string) ([]string, error)
+
+	// get that return a list of names
+	GetFollowingN(string) ([]string, error)
+	GetFollowers(string) ([]string, error)
 
 	// band methods
 	GetBans(string) ([]string, error)
@@ -170,18 +176,19 @@ func New(db *sql.DB) (AppDatabase, error) {
 
 		likesTable := `CREATE TABLE IF NOT EXISTS likes (
 			post_id string NOT NULL,
-			like_id string NOT NULL, 
+			liker string NOT NULL,
 			user_id string NOT NULL,
 			FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE ON UPDATE CASCADE,
 			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-			PRIMARY KEY (like_id)
+			PRIMARY KEY (post_id,user_id)
 		);`
 
 		commentsTable := `CREATE TABLE IF NOT EXISTS comments (
 			post_id string NOT NULL,
 			comment_id string NOT NULL,
+			commenter  string NOT NULL,
 			user_id string NOT NULL,
-			body TEXT,
+			body string NOT NULL,
 			PRIMARY KEY (comment_id),
 			FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE ON UPDATE CASCADE,
 			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -194,11 +201,11 @@ func New(db *sql.DB) (AppDatabase, error) {
 			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
 		);`
 
-		followersTable := `CREATE TABLE IF NOT EXISTS followers (
+		followersTable := `CREATE TABLE IF NOT EXISTS followees (
 			follower string NOT NULL,
 			followed string NOT NULL,
-			FOREIGN KEY (follower) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-			FOREIGN KEY (followed) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+			user_id string NOT NULL,
+			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
 		);`
 
 		_, err = db.Exec(usersTable)

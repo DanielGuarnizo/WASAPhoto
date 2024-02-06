@@ -1,12 +1,13 @@
 package api
 
 import (
+	"WASAPhoto/service/api/reqcontext"
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
-	"WASAPhoto/service/api/reqcontext"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
@@ -27,6 +28,7 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	// create a variable post to parse the data passed in the request body
+
 	var p Post
 
 	// Read and parse the JSON data from the request body into a Post object.
@@ -37,6 +39,7 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "bad request body"})
 		return
 	}
+	// rt.baseLogger.Warning("Raw Request Body:", p)
 
 	// defer closing the request body
 	defer r.Body.Close()
