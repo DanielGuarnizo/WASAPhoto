@@ -192,7 +192,7 @@ func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httpro
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
 		return
 	}
-	rt.baseLogger.Warning(followees)
+	// rt.baseLogger.Warning(followees)
 
 	// get the list of lastest post of the following users given the user_id of each of them
 	// then it returns a list of post and we conver from database.Post type to api.Post type
@@ -203,9 +203,9 @@ func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httpro
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
 		return
 	}
-	rt.baseLogger.Warning(dblastPosts)
+
 	lastPosts := GetPhotosFromDatabase(dblastPosts)
-	rt.baseLogger.Warning(lastPosts)
+
 	// we constructe the stream
 	var stream Stream
 	stream.Photos = lastPosts

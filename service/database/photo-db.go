@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 	"io/ioutil"
 	"log"
 )
@@ -73,7 +72,7 @@ func (db *appdbimpl) GetPhotos(userid string) ([]Post, error) {
 func (db *appdbimpl) GetLastPosts(usernames []string) ([]Post, error) {
 
 	var posts []Post
-	fmt.Println("inside the Getlast posts")
+
 	for _, username := range usernames {
 		// get userid given the username
 		var userid string

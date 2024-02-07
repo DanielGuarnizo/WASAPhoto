@@ -124,7 +124,7 @@ export default {
                 if (e.response && e.response.status === 400) {
                     this.errormsg = "Bad Request. invalid user data";
                 } else if (e.response && e.response.status === 500) {
-                    this.errormsg = "Internal server error occurred. Please try again later.";
+                    this.errormsg = "the user you are looking for is not available ";
                 } else {
                     console.log("enter in the else of the get user profile")
                     this.errormsg = e.toString();
@@ -239,19 +239,25 @@ export default {
             }
         },
         
-        onFileSelected(event) {
+        async onFileSelected(event) {
             if (event.target.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.base64Image = e.target.result;
-                };
-                reader.readAsDataURL(event.target.files[0]);
-                
+                await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.base64Image = e.target.result;
+                        resolve(); // Resolve the promise when the image is loaded
+                    };
+                    reader.readAsDataURL(event.target.files[0]);
+                });
             } else {
                 this.errormsg = "Select an image to upload to your profile";
             }
+
+            // Now that the image is loaded, call the uploadPhoto function
+            this.uploadPhoto();
         },
         async uploadPhoto() {
+            
             if (!this.base64Image) {
                 this.errormsg = "Select an image to upload to your profile";
                 return;
@@ -304,56 +310,57 @@ export default {
 </script>
 
 <template>
-    
-    
-    <div v-if="Owner" class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 ">
-        <button class="btn btn-success" @click="this.uploadPhoto()" >
-            Upload Photo
-            <input ref="fileInput" type="file" @change="this.onFileSelected">
-
-        </button>
-        
-        
-        <input type="text" id="newUsername" v-model="this.newUsername" class="form-control"
-        placeholder="Insert the new username" aria-label="Recipient's username"
-        aria-describedby="basic-addon2">
-
-        <div class="input-group-append">
-            <button class="btn btn-success" type="button" @click="setMyUserName()"> Set My User Name </button>
-        </div>
-
-    </div>
-    <div v-else>
-        <button v-if="!banisher" class="btn btn-success" type="button" @click="banUser()" > Band User </button>
-        <button v-else class="btn btn-success" type="button" @click="unBanUser()" > Unband User </button>
-    </div>
-
-
-    <div class="header-profile">
-
-        <Baned v-if="banished" :msg="this.searchUsername"></Baned>
-        <p v-else-if="banisher"> You band this user then you cannot see his profile</p>
-
-        <div v-else id="personal information">
-            <div>
-
-                <h2 class="text-center border-bottom">{{ this.searchUsername }} Profile</h2>
-                <div v-if="!Owner">
-
-                    <button v-if="!follower" class="btn btn-success" type="button" @click="followUser()" > Follow </button>
-                    <button v-else class="btn btn-success" type="button" @click="unfollowUser()" > UnFollow </button>
-                </div>
-            </div>
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 ">
-                <p>Number of Posts {{ this.profile.numberOfPosts }}</p>
-                <button @click="getFollowers">Number of Followers {{ this.profile.userFollowers }}</button>
-                <button @click="getFollowing">Number of Followings {{ this.profile.userFollowing }}</button>
-                
-            </div>
-            <Post v-for="post in Posts" :postData="post" />
-        </div>
-    </div>
     <ErrorMsg v-if="this.errormsg" :msg="this.errormsg"></ErrorMsg>
+    <div v-else >
+        <div v-if="Owner" class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 ">
+            <button class="btn btn-success"  >
+                Upload Photo
+                <input ref="fileInput" type="file" @change="this.onFileSelected">
+    
+            </button>
+            
+            
+            <input type="text" id="newUsername" v-model="this.newUsername" class="form-control"
+            placeholder="Insert the new username" aria-label="Recipient's username"
+            aria-describedby="basic-addon2">
+    
+            <div class="input-group-append">
+                <button class="btn btn-success" type="button" @click="setMyUserName()"> Set My User Name </button>
+            </div>
+    
+        </div>
+        <div v-else>
+            <button v-if="!banisher" class="btn btn-success" type="button" @click="banUser()" > Band User </button>
+            <button v-else class="btn btn-success" type="button" @click="unBanUser()" > Unband User </button>
+        </div>
+    
+    
+        <div class="header-profile">
+    
+            <Baned v-if="banished" :msg="this.searchUsername"></Baned>
+            <p v-else-if="banisher"> You band this user then you cannot see his profile</p>
+    
+            <div v-else id="personal information">
+                <div>
+    
+                    <h2 class="text-center border-bottom">{{ this.searchUsername }} Profile</h2>
+                    <div v-if="!Owner">
+    
+                        <button v-if="!follower" class="btn btn-success" type="button" @click="followUser()" > Follow </button>
+                        <button v-else class="btn btn-success" type="button" @click="unfollowUser()" > UnFollow </button>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 ">
+                    <p>Number of Posts {{ this.profile.numberOfPosts }}</p>
+                    <button @click="getFollowers">Number of Followers {{ this.profile.userFollowers }}</button>
+                    <button @click="getFollowing">Number of Followings {{ this.profile.userFollowing }}</button>
+                    
+                </div>
+                <Post v-for="post in Posts" :postData="post" />
+            </div>
+        </div>
+    </div>
+    
 </template>
 
 <style>

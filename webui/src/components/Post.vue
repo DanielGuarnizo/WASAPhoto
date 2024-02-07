@@ -126,14 +126,10 @@ export default {
         </div>
         <!-- Post content -->
         <div class="post-content">
-
-        <p>Uploaded: {{ postData.uploaded }}</p>
-        
-        
-        <img :src="postData.image" alt="Post Image" class="post-image" />
-        
-        <p>Number of Comments: {{ postData.numberOfComments }}</p>
-        <p>Number of Likes: {{ postData.numberOfLikes }}</p>
+            <p>Uploaded: {{ postData.uploaded }}</p>
+            <img :src="postData.image" alt="Post Image" class="post-image" />
+            <p>Number of Comments: {{ postData.numberOfComments }}</p>
+            <p>Number of Likes: {{ postData.numberOfLikes }}</p>
         </div>
 
         <div>
@@ -159,5 +155,9 @@ export default {
   /* Add other styling for the post container */
 }
 
-
+.post-author {
+  margin: 0 0 5px 0;
+  font-weight: bold;
+  /* Additional styling for the comment author */
+}
 </style>

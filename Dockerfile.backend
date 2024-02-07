@@ -1,0 +1,24 @@
+# This sets the base image to the official Golang image with version 1.19.4. 
+# It is used as a build environment.
+FROM golang:1.19.4 as builder
+
+## Copy go code This sets the working directory inside the container to /src.
+WORKDIR /src
+## This copies the content of the current directory (where the Dockerfile is located) into the container's /src directory.
+COPY  . .
+
+## Build executables This builds the Go application located in the cmd/webapi directory and names the output executable as /tmp/webapi. The binary is stored in the /tmp directory.
+RUN go build -o /tmp/webapi ./cmd/webapi
+
+## create final container
+FROM debian:bullseye
+
+## inform Docker about which port is used 
+EXPOSE 3000 4000
+
+## Copy the build executable from the builder image 
+WORKDIR /app/
+COPY --from=builder /tmp/webapi /bin/webapi
+
+## Executable command 
+CMD [ "/bin/webapi"]
