@@ -23,7 +23,7 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	//Authentication
+	// Authentication
 	// authorized := Authentication(w, r, userid)
 	// if authorized == false {
 	// 	return

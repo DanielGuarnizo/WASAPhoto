@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"io/ioutil"
-	"log"
 )
 
 func (db *appdbimpl) UploadPhoto(post Post) error {
@@ -55,7 +54,7 @@ func (db *appdbimpl) GetPhotos(userid string) ([]Post, error) {
 		post.NumberOfLikes = len(post.Likes)
 		post.Image, err = loadImageFromFileSystem(post.Image)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 
 		posts = append(posts, post)
@@ -105,38 +104,18 @@ func (db *appdbimpl) GetLastPosts(usernames []string) ([]Post, error) {
 			post.NumberOfLikes = len(post.Likes)
 			post.Image, err = loadImageFromFileSystem(post.Image)
 			if err != nil {
-				log.Fatal(err)
+				return nil, err
 			}
 
 			posts = append(posts, post)
 		}
-
-		// var post Post
-		// err := db.c.QueryRow(`SELECT * FROM posts WHERE username = ? ORDER BY uploaded DESC LIMIT 1`, username).Scan(&post.User_ID, &post.Post_ID, &post.Uploaded, &post.Image, &post.NumberOfComments, &post.NumberOfLikes)
-		// fmt.Println(post)
-		// post.Comments, _ = db.GetComments(post.Post_ID)
-		// post.Likes, _ = db.GetLikes(post.Post_ID)
-		// post.NumberOfComments = len(post.Comments)
-		// post.NumberOfLikes = len(post.Likes)
-		// post.Image, err = loadImageFromFileSystem(post.Image)
-		// if err != nil {
-		// 	if err == sql.ErrNoRows {
-		// 		// No posts found for the user so we pass to the next user id , because there is not an error
-		// 		continue
-		// 	}
-		// 	return nil, err
-		// }
-
-		// lastPosts = append(lastPosts, post)
-
-		// Check for errors from iterating over rows
 		if err := rows.Err(); err != nil {
 			return nil, err
 		}
 	}
 
 	return posts, nil
-	//return lastPosts, nil
+	// return lastPosts, nil
 }
 func (db *appdbimpl) GetUserIDForPost(postID string) (string, error) {
 	var User_ID string

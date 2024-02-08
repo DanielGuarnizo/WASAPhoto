@@ -109,14 +109,13 @@ components:
           type: string
           description: "this specify the date in which the post was done and the time"
           format: data-time
-          pattern: ^\d{4}-\d{2}-\d{2}\d{2}:\d{2}:\d{2}$
+          pattern: '^\d{4}-\d{2}-\d{2}\d{2}:\d{2}:\d{2}$'
           maxLength: 19 
           minLength: 19
           example: 2022-01-01 12:34:56
         
         # the main object of this app are the image
         image:
-          # $ref: "#/components/schemas/Image"
           type: string
           description: "Binary representation of a image"
           format: base64
@@ -151,20 +150,6 @@ components:
         numberOfLikes:
           type: integer
           description: "number of likes the post could have"
-
-    Following:
-      title: Following
-      type: object
-      description: Represents a user following other users.
-      properties:
-        follower:
-          $ref: "#/components/schemas/ID"
-          description: The user who is following.
-        followed:
-          type: array
-          description: List of users being followed.
-          items:
-            $ref: "#/components/schemas/ID"
 
     User:
       title: User
@@ -232,8 +217,7 @@ components:
     UserList:
       title: UserList
       type: object
-      description: |-
-        A list of users, used to return the list of followers and following of a user.
+      description: "A list of users, used to return the list of followers and following of a user."
       properties:
         users:
           type: array
@@ -260,7 +244,7 @@ tags:
 paths:
   # DO LOGING
   /session: 
-    put:
+    post:
       tags: ["login"]
       summary: Logs in the user 
       description: |-
@@ -277,8 +261,9 @@ paths:
               properties:
                 name:
                   type: string 
+                  description: name of the login user
                   example: Maria 
-                  pattern: 'ˆ.*?$'
+                  pattern:  "^.*?$"
                   minLength: 3 
                   maxLength: 16
         required: true 
@@ -304,7 +289,7 @@ paths:
   # LIKE PHOTO
   # here we want to add a like to a post 
   /users/{userid}/posts/{postid}/likes:
-    put:
+    post:
       security:
         - bearerAuth: []
       tags:
@@ -316,14 +301,16 @@ paths:
       parameters:
         - name: userid
           in: path
+          description: The user id 
+          required: true 
           schema:
             $ref: "#/components/schemas/ID"
-          required: true 
         - name: postid
           in: path
+          description: The post id
+          required: true 
           schema:
             $ref: "#/components/schemas/ID"
-          required: true 
       responses: 
         '204':
           description: li added  successfully.
@@ -339,22 +326,24 @@ paths:
       tags:
         - Users
         - Profiles
-      operationId: getLikes
+      operationId: getLikers
       summary: get the likes of a post
       description: |-
         and user get the likes of a post 
       parameters:
         - name: userid
           in: path
+          description: The user id 
+          required: true 
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
 
         - name: postid
           in: path
+          description: The post id
+          required: true 
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
           
       responses:
         # we use 200 instead of 201 because we are not creating a resource and we are just safistying a request
@@ -377,6 +366,7 @@ paths:
   
   # UNLIKE PHOTO
   # here we want to remove a like that we previously added to a post 
+  /users/{userid}/posts/{postid}/likes/{likeid}:
     delete: 
       security:
         - bearerAuth: []
@@ -389,15 +379,24 @@ paths:
       parameters:
         - name: userid
           in: path
+          description: The user id 
+          required: true 
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
-
+            
         - name: postid
           in: path
+          description: The post id
+          required: true 
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
+
+        - name: likeid
+          in: path
+          description: The like id 
+          required: true 
+          schema:
+            $ref: "#/components/schemas/ID"
         
       responses:
         # use status code 204 instead of 200, because with 200 there is response body with additional information which can be misleading in the context of a DELETE operation. with 204 indicates that the deletion operation was successful
@@ -418,8 +417,8 @@ paths:
    
   # COMMENT PHOTO        
   #here we want to add a comment to a post (it could be to the self post or to post of another user)
-  /comments:
-    put:
+  /users/{userid}/posts/{postid}/comments:
+    post:
       security: 
         - bearerAuth: []
       tags:
@@ -428,11 +427,26 @@ paths:
       summary: add a comment to a post
       description: |- 
         an user want to add a comment to a post of him self of another user post 
+      parameters:
+        - name: userid
+          in: path
+          description: The user id 
+          required: true 
+          schema:
+            $ref: "#/components/schemas/ID"
+            
+        - name: postid
+          in: path
+          description: The post id
+          required: true 
+          schema:
+            $ref: "#/components/schemas/ID"
           
       requestBody:
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/Comment"}
+            schema: 
+              $ref: "#/components/schemas/Comment"
 
       responses:
         "204":
@@ -442,51 +456,11 @@ paths:
           description: Bad request. Invalid user data.
             
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         
         '500':
           description: Internal server error.
           
-  /users/{userid}/posts/{postid}/comments:
-  # UNCOMMENT PHOTO
-    delete:
-      security: 
-        - bearerAuth: []
-      tags: 
-        - Posts
-      operationId: uncommentPhoto
-      summary: Remove a comment from a post
-      description: |-
-        here we want to remove a comment but with a simple constraint that only the "owner" of the comment can delete it's own comment   
-      parameters:
-        - name: userid
-          in: path
-          schema:
-            $ref: "#/components/schemas/ID"
-          required: true
-
-        - name: postid
-          in: path
-          schema:
-            $ref: "#/components/schemas/ID"
-          required: true
-          
-      responses:
-        "204":
-          description: |- 
-            specify if the comment in the user post was correctly deletated 
-        '400':
-            description: Bad request. Invalid user data.
-            
-        '401':
-            $ref: '#/components/responses/UnauthorizedError'
-            
-        "404":
-          description: Resource not found
-          
-        "500":
-          description: Internal server error 
-
     get:
       security:
       - bearerAuth: []
@@ -500,15 +474,17 @@ paths:
       parameters:
         - name: userid
           in: path
+          description: The user id 
+          required: true 
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
-
+            
         - name: postid
           in: path
+          description: The post id
+          required: true 
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
           
       responses:
         # we use 200 instead of 201 because we are not creating a resource and we are just safistying a request
@@ -521,19 +497,70 @@ paths:
                 $ref: "#/components/schemas/UserList"
 
         '400':
-            description: Bad request. Invalid user data.
+          description: Bad request. Invalid user data.
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: No user profiles found for the provided username.
         '500':
           description: Internal server error.
+
+  /users/{userid}/posts/{postid}/comments/{commentid}:
+  # UNCOMMENT PHOTO
+    delete:
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Posts
+      operationId: uncommentPhoto
+      summary: Remove a comment from a post
+      description: |-
+        here we want to remove a comment but with a simple constraint that only the "owner" of the comment can delete it's own comment   
+      parameters:
+        - name: userid
+          in: path
+          description: The user id 
+          required: true 
+          schema:
+            $ref: "#/components/schemas/ID"
+            
+        - name: postid
+          in: path
+          description: The post id
+          required: true 
+          schema:
+            $ref: "#/components/schemas/ID"
+
+        - name: commentid
+          in: path
+          description: The comment id
+          required: true 
+          schema:
+            $ref: "#/components/schemas/ID"
+          
+      responses:
+        "204":
+          description: |- 
+            specify if the comment in the user post was correctly deletated 
+        '400':
+          description: Bad request. Invalid user data.
+            
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+            
+        "404":
+          description: Resource not found
+          
+        "500":
+          description: Internal server error 
+
+    
   
   # SET MY USER NAME
   # an user want to change it's username
   /users/{userid}:
     # using the patch method we are gonna to apply some modification to the resourrces without changing the complete resource 
-    patch:
+    put:
       security:
         - bearerAuth: []
       tags:
@@ -545,9 +572,11 @@ paths:
       parameters:
         - name: userid
           in: path
+          description: The user id 
+          required: true
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
+
       requestBody:
         description: New username for the user
         required: true
@@ -559,6 +588,10 @@ paths:
                 newUsername:
                   type: string
                   description: "The new username to be set for the user."
+                  example: Maria 
+                  pattern:  "^.*?$"
+                  minLength: 3 
+                  maxLength: 16
       
       responses:
         "200":
@@ -592,26 +625,29 @@ paths:
       parameters:
         - name: userid
           in: path
+          description: The user id
+          required: true
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
           
       requestBody:
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/Post"}
+            schema: 
+              $ref: "#/components/schemas/Post"
             
       responses:
         "201":
           description: Post eas created successfully
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Post"}
+              schema: 
+                $ref: "#/components/schemas/Post"
         "400":
           description: Bad Request
 
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         
         "404":
           description: Resource not found
@@ -637,15 +673,17 @@ paths:
       parameters:
         - name: userid
           in: path
+          description: The user id 
+          required: true 
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
-          
+            
         - name: postid
           in: path
+          description: The post id
+          required: true 
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
       
       responses:
         "204":
@@ -653,10 +691,10 @@ paths:
             specify if the post in the user profile was correctly deletated
             
         '400':
-            description: Bad request. Invalid user data.
+          description: Bad request. Invalid user data.
             
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
 
         "404":
           description: Resource not found
@@ -666,9 +704,9 @@ paths:
           
   
   # FOLLOW OPERATIONS
-  /users/{userid}/follows/{username}:
+  /users/{userid}/follows:
     # FOLLOW AN USER
-    put:
+    post:
       security:
         - bearerAuth: []
       tags:
@@ -682,29 +720,34 @@ paths:
         - name: userid
           in: path
           description: ID of the user who want to follow another user
+          required: true 
           schema:
             $ref: "#/components/schemas/ID" 
-          required: true 
-        - name: username
-          in: path
-          description: username to search for 
-          required: true
-          schema:
-            type: string
-            description: "username of the banished user"
-            example: "Daniel"
-            pattern: "^.*?$"
-            minLength: 3 
-            maxLength: 16
+
+      requestBody:
+        description: Username of the user we want to follow
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newUsername:
+                  type: string
+                  description: "username of the user we want to follow"
+                  example: Maria 
+                  pattern:  "^.*?$"
+                  minLength: 3 
+                  maxLength: 16
       
       responses:
         "204":
           description: "User follow Succesfully"
         '400':
-            description: Bad request. Invalid user data.
+          description: Bad request. Invalid user data.
             
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         
         "404":
           description: Resource not found
@@ -712,7 +755,9 @@ paths:
         "500":
           description: Internal server error 
 
-    # UNFOLLWO AN USER
+
+  # UNFOLLOW AN USER
+  /users/{userid}/follows/{username}:
     delete:
       security: 
         - bearerAuth: []
@@ -725,9 +770,10 @@ paths:
       parameters:
         - name: userid
           in: path
+          description: The user id
+          required: true
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
         
         - name: username
           in: path
@@ -735,7 +781,7 @@ paths:
           required: true
           schema:
             type: string
-            description: "username of the banished user"
+            description: "username of the followed user"
             example: "Daniel"
             pattern: "^.*?$"
             minLength: 3 
@@ -747,10 +793,10 @@ paths:
             specify if the followed user is not more in the collection of folliwing users 
             
         '400':
-            description: Bad request. Invalid user data.
+          description: Bad request. Invalid user data.
             
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         "404":
           description: Resource not found
           
@@ -771,9 +817,10 @@ paths:
       parameters:
         - name: userid
           in: path
+          description: The user id 
+          required: true
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
 
       responses:
         "200":
@@ -784,7 +831,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserList"
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         "404":
           description: Resource not found
           
@@ -805,9 +852,10 @@ paths:
       parameters:
         - name: userid
           in: path
+          description: The user id 
+          required: true
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
 
       responses:
         "200":
@@ -818,7 +866,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserList"
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         "404":
           description: Resource not found
           
@@ -827,9 +875,9 @@ paths:
         
   # BAND OPERATIONS, BAN, UNBAN AND GET BANS 
   # here we create a collection of muted user for a particular userid    
-  /users/{userid}/bans/{username}:    
+  /users/{userid}/bans:    
   # /users/{userid}/bans/{username}:
-    put:
+    post:
       security: 
         - bearerAuth: []
       tags:
@@ -845,34 +893,77 @@ paths:
           required: true
           schema:
             $ref: "#/components/schemas/ID"
-        - name: username
-          in: path
-          description: username to search for 
-          required: true
-          schema:
-            type: string
-            description: "username of the banished user"
-            example: "Daniel"
-            pattern: "^.*?$"
-            minLength: 3 
-            maxLength: 16
+        
+      requestBody:
+        description: Username of the user we want to ban
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newUsername:
+                  type: string
+                  description: "username of the user we want to ban"
+                  example: Maria 
+                  pattern:  "^.*?$"
+                  minLength: 3 
+                  maxLength: 16
 
       responses:
         '204':
           description: User baned successfully.
 
         '400':
-            description: Bad request. Invalid user data.
+          description: Bad request. Invalid user data.
             
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found.
         '500':
           description: Internal server error.
+  # GETBANS OF AN USER 
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Users
+        - Profiles
+      operationId: getUserBans
+      summary: get the user bans 
+      description: |-
+        and user get the user baned by an user by name 
+      parameters:
+        - name: userid
+          in: path
+          description: user id who is looking for another user 
+          required: true
+          schema:
+            $ref: "#/components/schemas/ID"
 
-  # UNBAND USER
-  # here we want to unmute an user from the muted collection 
+      responses:
+        # we use 200 instead of 201 because we are not creating a resource and we are just safistying a request
+        "200":
+          description: |-
+            The list of users banned by the user.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+
+        '400':
+          description: Bad request. Invalid user data.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: No user profiles found for the provided username.
+        '500':
+          description: Internal server error.
+  
+  
+  # UNBAN USER 
+  /users/{userid}/bans/{username}: 
     delete:
       security:
         - bearerAuth: []
@@ -905,64 +996,15 @@ paths:
         '204':
           description: User unmuted successfully.
         '400':
-            description: Bad request. Invalid user data.
+          description: Bad request. Invalid user data.
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: User not found or not muted.
         '500':
           description: Internal server error.  
 
-  # GETBANS OF AN USER 
-    get:
-      security:
-        - bearerAuth: []
-      tags:
-        - Users
-        - Profiles
-      operationId: getUserBans
-      summary: get the user bans 
-      description: |-
-        and user get the user baned by an user by name 
-      parameters:
-        - name: userid
-          in: path
-          description: user id who is looking for another user 
-          schema:
-            $ref: "#/components/schemas/ID"
-          required: true
-          
-        - name: username
-          in: path
-          description: username to search for 
-          schema:
-            type: string
-            description: "username of the interesting profile"
-            example: "Daniel"
-            pattern: "^.*?$"
-            minLength: 3 
-            maxLength: 16
-          required: true
-
-      responses:
-        # we use 200 instead of 201 because we are not creating a resource and we are just safistying a request
-        "200":
-          description: |-
-            The list of users banned by the user.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserList"
-
-        '400':
-            description: Bad request. Invalid user data.
-        '401':
-            $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: No user profiles found for the provided username.
-        '500':
-          description: Internal server error.
-
+  
 
   # GET USER PROFILE 
   # we use the path , without including the query parameters directly in the path, 
@@ -982,13 +1024,14 @@ paths:
         - name: userid
           in: path
           description: user id who is looking for another user 
+          required: true
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
           
         - name: username
           in: query
           description: username to search for 
+          required: true
           schema:
             type: string
             description: "username of the interesting profile"
@@ -996,7 +1039,6 @@ paths:
             pattern: "^.*?$"
             minLength: 3 
             maxLength: 16
-          required: true
           
       responses:
         # we use 200 instead of 201 because we are not creating a resource and we are just safistying a request
@@ -1004,13 +1046,14 @@ paths:
           description: User profile found successfully 
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Profile"}
+              schema: 
+                $ref: "#/components/schemas/Profile"
 
         '400':
-            description: Bad request. Invalid user data.
+          description: Bad request. Invalid user data.
             
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: No user profiles found for the provided username.
         '500':
@@ -1032,21 +1075,23 @@ paths:
       parameters:
         - name: userid
           in: path
+          description: The user id 
+          required: true
           schema:
             $ref: "#/components/schemas/ID"
-          required: true
       
       responses:
         "200":
           description: user stream with all the post of the followed users 
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Stream"}
+              schema:  
+                $ref: "#/components/schemas/Stream"
         '400':
-            description: Bad request. Invalid user data.
+          description: Bad request. Invalid user data.
             
         '401':
-            $ref: '#/components/responses/UnauthorizedError'
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: No user profiles found for the provided username.
         '500':

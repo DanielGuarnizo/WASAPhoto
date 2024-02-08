@@ -81,7 +81,8 @@ export default {
             <button class="btn btn-success" type="button" @click="this.commentPhoto()">Comment</button>
         </div>
     </div>
-    <Comment v-for="comment in CommentList" :commentData="comment" />
+    <Comment v-for="comment in CommentList" :key="comment.comment_id" :commentData="comment" />
+
 
 </template>
 

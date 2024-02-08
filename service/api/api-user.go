@@ -90,7 +90,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	// retrieve the esential information to perfomr the operation
 
 	rt.baseLogger.Warning("enter in the get user profile")
-	//userid := ps.ByName("userid")
+	// userid := ps.ByName("userid")
 	username := r.URL.Query().Get("username")
 
 	// Authentication
@@ -111,7 +111,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 	// retrive all the data needed for fetch profile given the request user
 	var profile Profile
-	//var photos []Post
+	// var photos []Post
 	dbPhotos, err := rt.db.GetPhotos(ReqUser.User_ID)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error getting photos from database")

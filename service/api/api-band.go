@@ -103,7 +103,7 @@ func (rt *_router) getUserBans(w http.ResponseWriter, r *http.Request, ps httpro
 	userid := ps.ByName("userid")
 	username := ps.ByName("username")
 
-	//Authentication
+	// Authentication
 	authorized := Authentication(w, r, userid)
 	if authorized == false {
 		return

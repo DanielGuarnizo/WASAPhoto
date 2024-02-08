@@ -143,16 +143,15 @@ func New(db *sql.DB) (AppDatabase, error) {
 	if err != nil {
 		return nil, err
 	}
-	//fmt.Println("fuori il if del database")
+	// fmt.Println("fuori il if del database")
 
 	// Check if table exists. If not, the database is empty, and we need to create the structure
-	// var tableName string
-	// err = db.QueryRow(`SELECT username FROM sqlite_master WHERE type='table' AND name='users';`).Scan(&tableName)
-	var create = true
-	// if errors.Is(err, sql.ErrNoRows) {
-	if create {
+	var tableName string
+	err = db.QueryRow(`SELECT username FROM sqlite_master WHERE type='table' AND name='users';`).Scan(&tableName)
 
-		//fmt.Println("enter to create the tables ")
+	if errors.Is(err, sql.ErrNoRows) {
+
+		// fmt.Println("enter to create the tables ")
 
 		// here we will go to define the structure of the tables in my database
 		usersTable := `CREATE TABLE IF NOT EXISTS users (

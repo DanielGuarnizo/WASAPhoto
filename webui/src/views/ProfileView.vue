@@ -1,5 +1,6 @@
 <script>
 import Post from '@/components/Post.vue';
+
 export default {
     components: {
         Post
@@ -356,7 +357,7 @@ export default {
                     <button @click="getFollowing">Number of Followings {{ this.profile.userFollowing }}</button>
                     
                 </div>
-                <Post v-for="post in Posts" :postData="post" />
+                <Post v-for="post in Posts" :key="post.post_id" v-bind="post" :postData="post"/>
             </div>
         </div>
     </div>

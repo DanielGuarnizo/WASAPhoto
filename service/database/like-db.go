@@ -1,7 +1,5 @@
 package database
 
-import "fmt"
-
 func (db *appdbimpl) SetLike(postid string, liker string, userid string) error {
 
 	_, err := db.c.Exec(`INSERT INTO likes (post_id, liker, user_id) VALUES (?,?,?)`, postid, liker, userid)
@@ -60,7 +58,6 @@ func (db *appdbimpl) GetLikers(postid string) ([]string, error) {
 		return UserList, err
 	}
 	defer rows.Close()
-	fmt.Println("execute the query")
 
 	// retrieve wors from wuery and put then in a list of strings
 	for rows.Next() {
