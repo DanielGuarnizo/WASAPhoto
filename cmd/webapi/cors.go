@@ -20,4 +20,4 @@ func applyCORSHandler(h http.Handler) http.Handler {
 	)(h)
 }
 
-// Content-Type : to add headers 
+// Content-Type : to add headers
