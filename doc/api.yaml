@@ -22,6 +22,45 @@ components:
         WWW_Authenticate:
           schema:
             type: string
+
+  parameters:
+    userid:
+      name: userid
+      in: path
+      description: The user id
+      required: true
+      schema:
+        $ref: "#/components/schemas/ID"
+
+    postid:
+      name: postid
+      in: path
+      description: The post id
+      required: true
+      schema:
+        $ref: "#/components/schemas/ID"
+
+    commentid:
+      name: commentid
+      in: path
+      description: The comment id
+      required: true 
+      schema:
+        $ref: "#/components/schemas/ID"
+
+    username: 
+      name: username
+      in: path
+      description: username to search for 
+      required: true
+      schema:
+        type: string
+        description: "username of the followed user"
+        example: "Daniel"
+        pattern: "^.*?$"
+        minLength: 3 
+        maxLength: 16
+
   schemas:
     ID: 
       title: General ID format 
@@ -37,8 +76,7 @@ components:
       
     Comment:
       title: Comment of a post
-      description: |-
-        comment provided by and user to an images of another user
+      description: "comment provided by and user to an images of another user"
       type: object 
       properties:
         # identifier of the post to which the comment belongs 
@@ -71,8 +109,7 @@ components:
     
     Like:
       title: Like of a post
-      description: |-
-        like from a user to a photo/post of another user 
+      description: "like from a user to a photo/post of another user" 
       type: object
       properties:
         # identifier of the post to which the like belongs  
@@ -93,8 +130,7 @@ components:
 
     Post:
       title: Post of an user on his profile 
-      description: |- 
-        a post make from an user that will be posted in his profile, this post contains an image which could have eventually likes and comment from others user 
+      description: "a post make from an user that will be posted in his profile, this post contains an image which could have eventually likes and comment from others user" 
       type: object
       properties:
         # identifier of the user whose did the post 
@@ -109,10 +145,10 @@ components:
           type: string
           description: "this specify the date in which the post was done and the time"
           format: data-time
-          pattern: '^\d{4}-\d{2}-\d{2}\d{2}:\d{2}:\d{2}$'
+          pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
           maxLength: 19 
           minLength: 19
-          example: 2022-01-01 12:34:56
+          example: 2022-01-01T12:34:56Z
         
         # the main object of this app are the image
         image:
@@ -153,7 +189,7 @@ components:
 
     User:
       title: User
-      description: User schema.
+      description: "User schema."
       type: object
       properties:
         user_id:
@@ -168,8 +204,7 @@ components:
     
     Profile:
       title: Profile of an user on the app 
-      description: |-
-        the profile for each user will contain information related to it, such as how many photos has been upload until now, how many follower and another user information
+      description: "the profile for each user will contain information related to it, such as how many photos has been upload until now, how many follower and another user information"
       type: object 
       properties: 
         user:
@@ -201,8 +236,7 @@ components:
 
     Stream:
       title: stream of a user
-      description: |-
-        the stream will show the post of all the following person of the user 
+      description: "the stream will show the post of all the following person of the user "
       type: object
       properties:
         # this wil be a collection of photos/post the user will see of all the others profiles his following 
@@ -289,6 +323,9 @@ paths:
   # LIKE PHOTO
   # here we want to add a like to a post 
   /users/{userid}/posts/{postid}/likes:
+    parameters:
+      - $ref: "#/components/parameters/userid"
+      - $ref: "#/components/parameters/postid"
     post:
       security:
         - bearerAuth: []
@@ -298,19 +335,6 @@ paths:
       summary: Add a like to a post
       description: |- 
         an user is trying to add a like to a post of another user 
-      parameters:
-        - name: userid
-          in: path
-          description: The user id 
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-        - name: postid
-          in: path
-          description: The post id
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
       responses: 
         '204':
           description: li added  successfully.
@@ -329,22 +353,7 @@ paths:
       operationId: getLikers
       summary: get the likes of a post
       description: |-
-        and user get the likes of a post 
-      parameters:
-        - name: userid
-          in: path
-          description: The user id 
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-
-        - name: postid
-          in: path
-          description: The post id
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-          
+        and user get the likes of a post        
       responses:
         # we use 200 instead of 201 because we are not creating a resource and we are just safistying a request
         "200":
@@ -366,7 +375,12 @@ paths:
   
   # UNLIKE PHOTO
   # here we want to remove a like that we previously added to a post 
-  /users/{userid}/posts/{postid}/likes/{likeid}:
+  /users/{userid}/posts/{postid}/likes/{likerUsername}:
+    parameters:
+      - $ref: "#/components/parameters/userid"
+      - $ref: "#/components/parameters/postid"
+      - $ref: "#/components/parameters/username"
+
     delete: 
       security:
         - bearerAuth: []
@@ -376,27 +390,6 @@ paths:
       summary: Remove a like from a post 
       description: |- 
         an user want to remove e like that previously add to a post of another user 
-      parameters:
-        - name: userid
-          in: path
-          description: The user id 
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-            
-        - name: postid
-          in: path
-          description: The post id
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-
-        - name: likeid
-          in: path
-          description: The like id 
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
         
       responses:
         # use status code 204 instead of 200, because with 200 there is response body with additional information which can be misleading in the context of a DELETE operation. with 204 indicates that the deletion operation was successful
@@ -418,6 +411,9 @@ paths:
   # COMMENT PHOTO        
   #here we want to add a comment to a post (it could be to the self post or to post of another user)
   /users/{userid}/posts/{postid}/comments:
+    parameters:
+      - $ref: "#/components/parameters/userid"
+      - $ref: "#/components/parameters/postid"
     post:
       security: 
         - bearerAuth: []
@@ -426,22 +422,7 @@ paths:
       operationId: commentPhoto
       summary: add a comment to a post
       description: |- 
-        an user want to add a comment to a post of him self of another user post 
-      parameters:
-        - name: userid
-          in: path
-          description: The user id 
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-            
-        - name: postid
-          in: path
-          description: The post id
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-          
+        an user want to add a comment to a post of him self of another user post      
       requestBody:
         content:
           application/json:
@@ -449,8 +430,12 @@ paths:
               $ref: "#/components/schemas/Comment"
 
       responses:
-        "204":
-          description: Comment successfully created 
+        "201":
+          description: the comment was successfully uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/parameters/commentid"
               
         '400':
           description: Bad request. Invalid user data.
@@ -470,22 +455,7 @@ paths:
       operationId: getComments
       summary: get the comments of a post
       description: |-
-        and user get the comments of a post 
-      parameters:
-        - name: userid
-          in: path
-          description: The user id 
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-            
-        - name: postid
-          in: path
-          description: The post id
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-          
+        and user get the comments of a post        
       responses:
         # we use 200 instead of 201 because we are not creating a resource and we are just safistying a request
         "200":
@@ -506,7 +476,12 @@ paths:
           description: Internal server error.
 
   /users/{userid}/posts/{postid}/comments/{commentid}:
-  # UNCOMMENT PHOTO
+    parameters:
+      - $ref: "#/components/parameters/userid"
+      - $ref: "#/components/parameters/postid"
+      - $ref: "#/components/parameters/commentid"
+
+    # UNCOMMENT PHOTO
     delete:
       security: 
         - bearerAuth: []
@@ -516,27 +491,6 @@ paths:
       summary: Remove a comment from a post
       description: |-
         here we want to remove a comment but with a simple constraint that only the "owner" of the comment can delete it's own comment   
-      parameters:
-        - name: userid
-          in: path
-          description: The user id 
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-            
-        - name: postid
-          in: path
-          description: The post id
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-
-        - name: commentid
-          in: path
-          description: The comment id
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
           
       responses:
         "204":
@@ -559,7 +513,9 @@ paths:
   # SET MY USER NAME
   # an user want to change it's username
   /users/{userid}:
-    # using the patch method we are gonna to apply some modification to the resourrces without changing the complete resource 
+    parameters:
+      - $ref: "#/components/parameters/userid"
+
     put:
       security:
         - bearerAuth: []
@@ -569,14 +525,6 @@ paths:
       operationId: setMyUserName
       summary: User wants to change the username
       description: An user wants to change the username of its own profile.
-      parameters:
-        - name: userid
-          in: path
-          description: The user id 
-          required: true
-          schema:
-            $ref: "#/components/schemas/ID"
-
       requestBody:
         description: New username for the user
         required: true
@@ -612,7 +560,9 @@ paths:
   # UPLOAD PHOTO 
   # the user want to upload a post/photo to his profile 
   /users/{userid}/posts:
-    put:
+    parameters:
+      - $ref: "#/components/parameters/userid"
+    post:
       security: 
         - bearerAuth: []
       tags: 
@@ -621,15 +571,7 @@ paths:
       operationId: uploadPhoto
       summary: upload post to profile
       description: |-
-        user want to upload a new post to it's own profile 
-      parameters:
-        - name: userid
-          in: path
-          description: The user id
-          required: true
-          schema:
-            $ref: "#/components/schemas/ID"
-          
+        user want to upload a new post to it's own profile           
       requestBody:
         content:
           application/json:
@@ -659,6 +601,10 @@ paths:
   # DELETE PHOTO  
   # the user want to remove a post/photo from his profile Cascading Deletion In this approach, when a post is deleted, all associated likes and comments are automatically deleted as well. This is known as cascading deletion, where the deletion of a parent resource triggers the deletion of its dependent resources.
   /users/{userid}/posts/{postid}:
+    parameters:
+      - $ref: "#/components/parameters/userid"
+      - $ref: "#/components/parameters/postid"
+
     delete:
       security: 
         - bearerAuth: []
@@ -669,22 +615,6 @@ paths:
       summary: Remove post from profile
       description: |-
         user want to remove post from his own profile 
-      
-      parameters:
-        - name: userid
-          in: path
-          description: The user id 
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-            
-        - name: postid
-          in: path
-          description: The post id
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID"
-      
       responses:
         "204":
           description: |- 
@@ -704,7 +634,10 @@ paths:
           
   
   # FOLLOW OPERATIONS
-  /users/{userid}/follows:
+  /users/{userid}/followings:
+    parameters:
+      - $ref: "#/components/parameters/userid"
+
     # FOLLOW AN USER
     post:
       security:
@@ -715,14 +648,6 @@ paths:
       summary: Start follow another user
       description: |-
         An user wants to start to follow another user 
-      
-      parameters:
-        - name: userid
-          in: path
-          description: ID of the user who want to follow another user
-          required: true 
-          schema:
-            $ref: "#/components/schemas/ID" 
 
       requestBody:
         description: Username of the user we want to follow
@@ -755,56 +680,6 @@ paths:
         "500":
           description: Internal server error 
 
-
-  # UNFOLLOW AN USER
-  /users/{userid}/follows/{username}:
-    delete:
-      security: 
-        - bearerAuth: []
-      tags:
-        - Users
-      operationId: unfollowUser
-      summary: user unfollow an user
-      description: |-
-        User want to unfollow  another user that follow in past
-      parameters:
-        - name: userid
-          in: path
-          description: The user id
-          required: true
-          schema:
-            $ref: "#/components/schemas/ID"
-        
-        - name: username
-          in: path
-          description: username to search for 
-          required: true
-          schema:
-            type: string
-            description: "username of the followed user"
-            example: "Daniel"
-            pattern: "^.*?$"
-            minLength: 3 
-            maxLength: 16
-          
-      responses:
-        "204":
-          description: |- 
-            specify if the followed user is not more in the collection of folliwing users 
-            
-        '400':
-          description: Bad request. Invalid user data.
-            
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        "404":
-          description: Resource not found
-          
-        "500":
-          description: Internal server error 
-    
-  # GET FOLLOWING OF AN USER
-  /users/{userid}/following:
     get:  
       security: 
         - bearerAuth: []
@@ -814,13 +689,6 @@ paths:
       summary: users followig 
       description: |-
         get the list of user an user by userid is following 
-      parameters:
-        - name: userid
-          in: path
-          description: The user id 
-          required: true
-          schema:
-            $ref: "#/components/schemas/ID"
 
       responses:
         "200":
@@ -837,9 +705,45 @@ paths:
           
         "500":
           description: Internal server error 
+
+  # UNFOLLOW AN USER
+  /users/{userid}/followings/{followed}:
+    parameters:
+      - $ref: "#/components/parameters/userid"
+      - $ref: "#/components/parameters/username"
+
+    delete:
+      security: 
+        - bearerAuth: []
+      tags:
+        - Users
+      operationId: unfollowUser
+      summary: user unfollow an user
+      description: |-
+        User want to unfollow  another user that follow in past          
+      responses:
+        "204":
+          description: |- 
+            specify if the followed user is not more in the collection of folliwing users 
+            
+        '400':
+          description: Bad request. Invalid user data.
+            
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        "404":
+          description: Resource not found
+          
+        "500":
+          description: Internal server error 
+    
+
   
   # GET FOLLOWERS OF AN USER 
   /users/{userid}/followers:
+    parameters:
+      - $ref: "#/components/parameters/userid"
+
     get:  
       security: 
         - bearerAuth: []
@@ -849,13 +753,6 @@ paths:
       summary: users followers
       description: |-
         get the list of user that follow an user with userid
-      parameters:
-        - name: userid
-          in: path
-          description: The user id 
-          required: true
-          schema:
-            $ref: "#/components/schemas/ID"
 
       responses:
         "200":
@@ -876,7 +773,20 @@ paths:
   # BAND OPERATIONS, BAN, UNBAN AND GET BANS 
   # here we create a collection of muted user for a particular userid    
   /users/{userid}/bans:    
-  # /users/{userid}/bans/{username}:
+    parameters:
+      - $ref: "#/components/parameters/userid"
+      - name: searchUsername
+        in: query
+        description: searchUsername to search for 
+        required: true
+        schema:
+          type: string
+          description: "username of the interesting profile"
+          example: "Daniel"
+          pattern: "^.*?$"
+          minLength: 3 
+          maxLength: 16
+
     post:
       security: 
         - bearerAuth: []
@@ -886,13 +796,6 @@ paths:
       summary: an user band another user
       description: |-
         Ban's another user, preventing them from interacting with the specified user.
-      parameters:
-        - name: userid
-          in: path
-          description: ID of the user who wants to ban another user.
-          required: true
-          schema:
-            $ref: "#/components/schemas/ID"
         
       requestBody:
         description: Username of the user we want to ban
@@ -923,7 +826,8 @@ paths:
           description: User not found.
         '500':
           description: Internal server error.
-  # GETBANS OF AN USER 
+    
+    # GETBANS OF AN USER 
     get:
       security:
         - bearerAuth: []
@@ -934,14 +838,6 @@ paths:
       summary: get the user bans 
       description: |-
         and user get the user baned by an user by name 
-      parameters:
-        - name: userid
-          in: path
-          description: user id who is looking for another user 
-          required: true
-          schema:
-            $ref: "#/components/schemas/ID"
-
       responses:
         # we use 200 instead of 201 because we are not creating a resource and we are just safistying a request
         "200":
@@ -963,7 +859,11 @@ paths:
   
   
   # UNBAN USER 
-  /users/{userid}/bans/{username}: 
+  /users/{userid}/bans/{banished}: 
+    parameters:
+      - $ref: "#/components/parameters/userid"
+      - $ref: "#/components/parameters/username"
+
     delete:
       security:
         - bearerAuth: []
@@ -973,24 +873,6 @@ paths:
       summary: an user unban another user 
       description: |-
         Allows a user to unban another user, allowing them to interact again.
-      parameters:
-        - name: userid
-          in: path
-          description: ID of the user who wants to unban another user.
-          required: true
-          schema:
-            $ref: "#/components/schemas/ID"
-        - name: username
-          in: path
-          description: username to search for 
-          required: true
-          schema:
-            type: string
-            description: "username of the banished user"
-            example: "Daniel"
-            pattern: "^.*?$"
-            minLength: 3 
-            maxLength: 16
 
       responses:
         '204':
@@ -1010,6 +892,20 @@ paths:
   # we use the path , without including the query parameters directly in the path, 
   #it should be done when an user makes a request to search an user e.g  /users/{userid}/profile?username=desiredUsername
   /users/{userid}/profile:
+    parameters:
+      - $ref: "#/components/parameters/userid"
+      - name: username
+        in: query
+        description: username to search for 
+        required: true
+        schema:
+          type: string
+          description: "username of the interesting profile"
+          example: "Daniel"
+          pattern: "^.*?$"
+          minLength: 3 
+          maxLength: 16
+
     get:
       security:
         - bearerAuth: []
@@ -1020,26 +916,6 @@ paths:
       summary: user search another user 
       description: |-
         an user search another user by name and try to get a possible resoult that match with his request 
-      parameters:
-        - name: userid
-          in: path
-          description: user id who is looking for another user 
-          required: true
-          schema:
-            $ref: "#/components/schemas/ID"
-          
-        - name: username
-          in: query
-          description: username to search for 
-          required: true
-          schema:
-            type: string
-            description: "username of the interesting profile"
-            example: "Daniel"
-            pattern: "^.*?$"
-            minLength: 3 
-            maxLength: 16
-          
       responses:
         # we use 200 instead of 201 because we are not creating a resource and we are just safistying a request
         "200":
@@ -1061,7 +937,9 @@ paths:
           
   # GET MY STREAM 
   /users/{userid}/stream:
-  
+    parameters:
+      - $ref: "#/components/parameters/userid"
+
     get:
       security:
         - bearerAuth: []
@@ -1072,13 +950,6 @@ paths:
       summary: Get the stream of an specific user
       description: |-
         an user wanna get the stream, so where all the post of the following users the user follow are posted.
-      parameters:
-        - name: userid
-          in: path
-          description: The user id 
-          required: true
-          schema:
-            $ref: "#/components/schemas/ID"
       
       responses:
         "200":

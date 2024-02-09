@@ -14,16 +14,24 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	w.Header().Set("Content-Type", "application/json")
 	rt.baseLogger.Warning("Enter in the uploadPhoto function")
 
-	// get from the path the userid and handle error
+	// Get needed information to perfomr the operation
 	userid := ps.ByName("userid")
-	if userid == "" {
-		rt.baseLogger.Warning("the userid in the path is empty")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	name, _ := rt.db.GetName(userid)
+	id := r.Header.Get("Authorization")
+
 	// Authentication
-	authorized := Authentication(w, r, userid)
-	if authorized == false {
+	is_valid, err := rt.db.Validate(name, id)
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
 
@@ -32,7 +40,7 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	var p Post
 
 	// Read and parse the JSON data from the request body into a Post object.
-	err := json.NewDecoder(r.Body).Decode(&p)
+	err = json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Invalid JSON format")
 		w.WriteHeader(http.StatusBadRequest)
@@ -94,23 +102,30 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// Get needed information to perfomr the operation
+	userid := ps.ByName("userid")
 	postid := ps.ByName("postid")
-	if postid == "" {
-		// Handle the case when "likeid" is not present in the request.
-		rt.baseLogger.Warning("the postid in the path is empty")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	name, _ := rt.db.GetName(userid)
+	id := r.Header.Get("Authorization")
 
-	userid, _ := rt.db.GetUserIDForPost(postid)
 	// Authentication
-	authorized := Authentication(w, r, userid)
-	if authorized == false {
+	is_valid, err := rt.db.Validate(name, id)
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
 
 	// Remove from the database the post given the postid
-	err := rt.db.DeletePhoto(postid)
+	err = rt.db.DeletePhoto(postid)
 	if err != nil {
 		// check it the err is of the same type of sql.ErrNoRows
 		if errors.Is(err, sql.ErrNoRows) {

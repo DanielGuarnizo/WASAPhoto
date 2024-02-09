@@ -13,30 +13,46 @@ import (
 func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// Get needed information to perfomr the operation
 	userid := ps.ByName("userid")
-	banisher, err := rt.db.GetName(userid)
-	if err != nil {
-		rt.baseLogger.Warning("when we try to retrieve the name of a banisher by userid there was an error")
-	}
+	banisher, _ := rt.db.GetName(userid)
+	id := r.Header.Get("Authorization")
 
-	banished := ps.ByName("username")
+	// Authentication
+	is_valid, err := rt.db.Validate(banisher, id)
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
 
-	// to handle the error if the request wa made in a wrong way
-	if banisher == "" || banished == "" {
-		// Handle the case when "likeid" is not present in the request.
-		rt.baseLogger.Warning("the userid or username in the path is empty")
-		w.WriteHeader(http.StatusBadRequest)
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
-	// Authentication
 
-	// authorized := Authentication(w, r, userid)
-	// if authorized == false {
-	// 	return
-	// }
+	// read and parse the json data from the request body into an username upadate object
+	type Body struct {
+		Banished string `json:"banished"`
+	}
+	var input Body
+	err = json.NewDecoder(r.Body).Decode(&input)
+	if err != nil || input.Banished == "" {
+		// Handle error (e.g., invalid JSON format)
+		rt.baseLogger.WithError(err).Warning("invalid JSON format")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "bad request body"})
+		return
+	}
+
+	// defer closing the request body
+	defer r.Body.Close()
 
 	// Save into the database the baned relationship
-	err = rt.db.BandUser(banisher, banished, userid)
+	err = rt.db.BandUser(banisher, input.Banished, userid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error saving baned user into database")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -52,24 +68,25 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// Get needed information to perfomr the operation
 	userid := ps.ByName("userid")
-	banisher, err := rt.db.GetName(userid)
-	if err != nil {
-		return
-	}
+	banisher, _ := rt.db.GetName(userid)
+	id := r.Header.Get("Authorization")
+	banished := ps.ByName("banished")
 
-	banished := ps.ByName("username")
-
-	// to handle the error if the request wa made in a wrong way
-	if banisher == "" || banished == "" {
-		// Handle the case when "likeid" is not present in the request.
-		rt.baseLogger.Warning("the userid or username in the path is empty")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
 	// Authentication
-	authorized := Authentication(w, r, userid)
-	if authorized == false {
+	is_valid, err := rt.db.Validate(banisher, id)
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
 
@@ -98,19 +115,32 @@ func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprout
 
 func (rt *_router) getUserBans(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
-	rt.baseLogger.Warning("enter in getUserBans")
-	// retrieve the esential information to perfomr the operation
+	// rt.baseLogger.Warning("enter in getUserBans")
+
+	// Get needed information to perfomr the operation
 	userid := ps.ByName("userid")
-	username := ps.ByName("username")
+	username, _ := rt.db.GetName(userid)
+	id := r.Header.Get("Authorization")
+	searchUsername := r.URL.Query().Get("searchUsername")
 
 	// Authentication
-	authorized := Authentication(w, r, userid)
-	if authorized == false {
+	is_valid, err := rt.db.Validate(username, id)
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
 
 	// Get the list of users fromdatabase
-	UserList, err := rt.db.GetBans(username)
+	UserList, err := rt.db.GetBans(searchUsername)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error retreaving user list of bans")
 		w.WriteHeader(http.StatusInternalServerError)

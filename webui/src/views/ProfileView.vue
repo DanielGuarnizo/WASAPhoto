@@ -45,11 +45,12 @@ export default {
     methods: {
         async checkIfBanisher() {
             try {
-                let response = await this.$axios.get(`/users/${this.token}/bans/${this.usernameLogin}`, {
+                let response = await this.$axios.get(`/users/${this.token}/bans?searchUsername=${this.usernameLogin}`,{
                     headers: {
-                        Authorization: this.token
-                    } 
-                })
+                        'Content-Type': 'application/json',
+                        'Authorization': `${this.token}`
+                    }
+                });
                 const UserList = response.data;
                 // Check is the username is in the list if empty then the serachUsername has not baned persons
                 if (UserList === null) {
@@ -72,11 +73,13 @@ export default {
             // verify if the user with userid can is baned or not from the user with username
             console.log("before the try catch of checkIfBanished")
             try {
-                let response = await this.$axios.get(`/users/${this.token}/bans/${this.searchUsername}`, {
+                let response = await this.$axios.get(`/users/${this.token}/bans?searchUsername=${this.searchUsername}`,
+                {
                     headers: {
-                        Authorization: this.token
-                    } 
-                })
+                        'Content-Type': 'application/json',
+                        'Authorization': `${this.token}`
+                    }
+                });
                 const UserList = response.data;
 
                 // Check is the username is in the list if empty then the serachUsername has not baned persons
@@ -134,9 +137,14 @@ export default {
         },
         async banUser() {
             try {
-                let response = await this.$axios.put(`/users/${this.token}/bans/${this.searchUsername}`, {
+                let response = await this.$axios.post(`/users/${this.token}/bans`,
+                {
+                    banished: this.searchUsername
+                },
+                {
                     headers: {
-                        Authorization: this.token
+                        'Content-Type': 'application/json',
+                        'Authorization': `${this.token}`
                     } 
                 })
                 if (response.status === 204) {
@@ -165,8 +173,7 @@ export default {
         async setMyUserName () {
             try {
                 if (this.newUsername) {
-                    const response = await this.$axios.put(
-                        `/users/${this.token}`,
+                    const response = await this.$axios.put(`/users/${this.token}`,
                         {
                         newUsername: this.newUsername
                         },
@@ -189,15 +196,19 @@ export default {
         },
         async followUser() {
             try {
-                const response = await this.$axios.put(`/users/${this.token}/follows/${this.searchUsername}`,
+                const response = await this.$axios.post(`/users/${this.token}/following`,{
+                    searchUsername: this.searchUsername
+                },
                 {
                     headers: {
-                        Authorization: this.token
+                        'Content-Type': 'application/json',
+                        'Authorization': this.token
                     } 
-                }
-                );
+                });
                 this.follower = true 
                 console.log(response.status);
+                console.log("realoading page")
+                window.location.reload();
             } catch (error) {
                 // Handle errors
                 console.error(error);
@@ -205,22 +216,26 @@ export default {
         },
         async unfollowUser() {
             try {
-                const response = await this.$axios.delete(`/users/${this.token}/follows/${this.searchUsername}`,
-                {
-                    headers: {
-                    'Authorization': `Bearer ${this.accessToken}`
+                const response = await this.$axios.delete(`/users/${this.token}/following/${this.searchUsername}`,{
+                    headers : {
+                        'Authorization': `${this.token}`
                     }
-                }
-                )
+                })
                 this.follower = false
                 console.log(response.status)
+                console.log("realoading page")
+                window.location.reload();
             } catch {
 
             }
         },
         async isFollower() {
             try {
-                const response = await this.$axios.get(`/users/${this.token}/following`)
+                const response = await this.$axios.get(`/users/${this.token}/following`, {
+                    headers: {
+                        Authorization: this.token
+                    } 
+                })
                 const UserList = response.data;
                 // Check is the username is in the list if empty then the serachUsername has not baned persons
                 if (UserList === null) {
@@ -239,16 +254,22 @@ export default {
 
             }
         },
+
+        openFileSelector() {
+            // Programmatically trigger the file input
+            this.$refs.fileInput.click();
+        },
         
-        async onFileSelected(event) {
+        async uploadFile(event) {
+            // Handle file selection here
             if (event.target.files[0]) {
                 await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        this.base64Image = e.target.result;
-                        resolve(); // Resolve the promise when the image is loaded
-                    };
-                    reader.readAsDataURL(event.target.files[0]);
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.base64Image = e.target.result;
+                    resolve(); // Resolve the promise when the image is loaded
+                };
+                reader.readAsDataURL(event.target.files[0]);
                 });
             } else {
                 this.errormsg = "Select an image to upload to your profile";
@@ -265,7 +286,7 @@ export default {
             }
 
             try {
-                let response = await this.$axios.put(`/users/${this.token}/posts`, 
+                let response = await this.$axios.post(`/users/${this.token}/posts`, 
                 {
                     user_id: this.token,
                     post_id: '',
@@ -285,8 +306,10 @@ export default {
                 this.errormsg = null;
                 this.$refs.fileInput.value = null;
                 this.base64Image = null;
-
+                
                 this.getUserProfile();
+                console.log("realoading page")
+                window.location.reload();
             } catch (error) {
                 // Handle errors
                 console.error(error);
@@ -314,12 +337,11 @@ export default {
     <ErrorMsg v-if="this.errormsg" :msg="this.errormsg"></ErrorMsg>
     <div v-else >
         <div v-if="Owner" class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 ">
-            <button class="btn btn-success"  >
-                Upload Photo
-                <input ref="fileInput" type="file" @change="this.onFileSelected">
-    
-            </button>
-            
+
+            <div>
+                <button class="btn btn-success" @click="openFileSelector">Upload Photo</button>
+                <input ref="fileInput" type="file" style="display: none;" @change="uploadFile">
+            </div>
             
             <input type="text" id="newUsername" v-model="this.newUsername" class="form-control"
             placeholder="Insert the new username" aria-label="Recipient's username"

@@ -8,8 +8,8 @@ func (db *appdbimpl) SetFollow(username string, searchUsername string, userid st
 	return nil
 }
 
-func (db *appdbimpl) RemoveFollow(userid string, searchUsername string) error {
-	_, err := db.c.Exec(`DELETE FROM followees WHERE user_id = ? AND followed = ?`, userid, searchUsername)
+func (db *appdbimpl) RemoveFollow(follower string, followed string) error {
+	_, err := db.c.Exec(`DELETE FROM followees WHERE follower = ? AND followed = ?`, follower, followed)
 	if err != nil {
 		return err
 	}

@@ -22,26 +22,27 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 	// Specify the content-type the server will return to the client
 	w.Header().Set("Content-Type", "application/json")
 
+	// Get needed information to perfomr the operation
 	userid := ps.ByName("userid")
 	postid := ps.ByName("postid")
-	// to handle the error if the request wa made in a wrong way
-	if postid == "" || userid == "" {
-		// Handle the case when "likeid" is not present in the request.
-		rt.baseLogger.Warning("the likeid in the path is empty")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	liker, _ := rt.db.GetName(userid) // name of the userid
+	id := r.Header.Get("Authorization")
 
-	// get the name of the user by userid
-	liker, err := rt.db.GetName(userid)
-	if err != nil {
+	// Authentication
+	is_valid, err := rt.db.Validate(liker, id)
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
-	// Authentication
-	// authorized := Authentication(w, r, userid)
-	// if authorized == false {
-	// 	return
-	// }
 
 	// Save the new like to the database
 	err = rt.db.SetLike(postid, liker, userid)
@@ -59,24 +60,30 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// Get needed information to perfomr the operation
 	userid := ps.ByName("userid")
 	postid := ps.ByName("postid")
-	// to handle the error if the request wa made in a wrong way
-	if postid == "" || userid == "" {
-		// Handle the case when "likeid" is not present in the request.
-		rt.baseLogger.Warning("the likeid in the path is empty")
-		w.WriteHeader(http.StatusBadRequest)
+	likerUsername := ps.ByName("likerUsername")
+	id := r.Header.Get("Authorization")
+
+	// Authentication
+	is_valid, err := rt.db.Validate(likerUsername, id)
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
 
-	// Authentication
-	// authorized := Authentication(w, r, userid)
-	// if authorized == false {
-	// 	return
-	// }
-
 	// Remove from the database the like given the likeid
-	err := rt.db.RemoveLike(userid, postid)
+	err = rt.db.RemoveLike(userid, postid)
 	if err != nil {
 		// check it the err is of the same type of sql.ErrNoRows
 		if errors.Is(err, sql.ErrNoRows) {

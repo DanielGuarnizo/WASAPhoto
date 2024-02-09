@@ -13,28 +13,47 @@ import (
 func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// Get needed information to perfomr the operation
 	userid := ps.ByName("userid")
-	searchUsername := ps.ByName("username")
-	// to handle the error if the request wa made in a wrong way
-	if userid == "" || searchUsername == "" {
-		// Handle the case when "likeid" is not present in the request.
-		rt.baseLogger.Warning("the userid or username in the path is empty")
-		w.WriteHeader(http.StatusBadRequest)
+	username, _ := rt.db.GetName(userid)
+	id := r.Header.Get("Authorization")
+
+	// Authentication
+	is_valid, err := rt.db.Validate(username, id)
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
 
-	// Authentication
-	// authorized := Authentication(w, r, userid)
-	// if authorized == false {
-	// 	return
-	// }
+	// read and parse the json data from the request body into an username upadate object
+	type Body struct {
+		SearchUsername string `json:"searchUsername"`
+	}
+	var input Body
+	err = json.NewDecoder(r.Body).Decode(&input)
+	if err != nil || input.SearchUsername == "" {
+		// Handle error (e.g., invalid JSON format)
+		rt.baseLogger.WithError(err).Warning("invalid JSON format")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "bad request body"})
+		return
+	}
 
-	// Retrieve usename of the user by using userid
-	username, err := rt.db.GetName(userid)
+	// defer closing the request body
+	defer r.Body.Close()
 
 	// Save into the database the relation between the follower(userid) and the
 	// followed(property of the object pass into the request body)
-	err = rt.db.SetFollow(username, searchUsername, userid)
+	err = rt.db.SetFollow(username, input.SearchUsername, userid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error saving follow into database")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -49,26 +68,30 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// load parameter from the path
+	// Get needed information to perfomr the operation
 	userid := ps.ByName("userid")
-	searchUsername := ps.ByName("username")
+	followed := ps.ByName("followed")
+	follower, _ := rt.db.GetName(userid)
+	id := r.Header.Get("Authorization")
 
-	// to handle the error if the request wa made in a wrong way
-	if userid == "" || searchUsername == "" {
-		// Handle the case when "likeid" is not present in the request.
-		rt.baseLogger.Warning("the userid or username in the path is empty")
-		w.WriteHeader(http.StatusBadRequest)
+	// Authentication
+	is_valid, err := rt.db.Validate(follower, id)
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
 
-	// Authentication
-	// authorized := Authentication(w, r, userid)
-	// if authorized == false {
-	// 	return
-	// }
-
-	// Remove from the database the follow given the userid and the followedid
-	err := rt.db.RemoveFollow(userid, searchUsername)
+	// Remove from the database the follow given the userid and the followed name
+	err = rt.db.RemoveFollow(follower, followed)
 	if err != nil {
 		// check it the err is of the same type of sql.ErrNoRows
 		if errors.Is(err, sql.ErrNoRows) {
@@ -91,16 +114,26 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 
 func (rt *_router) getFollowing(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
+	// Get needed information to perfomr the operation
 	userid := ps.ByName("userid")
+	username, _ := rt.db.GetName(userid)
+	id := r.Header.Get("Authorization")
 
-	// Retrieve usename of the user by using userid
-	username, err := rt.db.GetName(userid)
 	// Authentication
+	is_valid, err := rt.db.Validate(username, id)
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
 
-	// authorized := Authentication(w, r, userid)
-	// if authorized == false {
-	// 	return
-	// }
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
+		return
+	}
 
 	// Get the list of following from the database
 	UserList, err := rt.db.GetFollowingN(username)

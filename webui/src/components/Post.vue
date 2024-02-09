@@ -47,7 +47,10 @@ export default {
         },
         async likePhoto() {
             try {
-                let response = await this.$axios.put(`/users/${this.token}/posts/${this.postData.post_id}/likes`,{
+                console.log(this.token)
+                let response = await this.$axios.post(`/users/${this.token}/posts/${this.postData.post_id}/likes`,{
+                    
+                },{
                     headers : {
                         'Authorization': `${this.token}`
                     }
@@ -63,7 +66,7 @@ export default {
         },
         async unlikePhoto() {
             try {
-                let response = await this.$axios.delete(`/users/${this.token}/posts/${this.postData.post_id}/likes`,{
+                let response = await this.$axios.delete(`/users/${this.token}/posts/${this.postData.post_id}/likes/${this.usernameLogin}`,{
                     headers : {
                         'Authorization': `${this.token}`
                     }

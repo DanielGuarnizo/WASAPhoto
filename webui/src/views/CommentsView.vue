@@ -40,7 +40,7 @@ export default {
         async commentPhoto(){
             if (this.inputComment){
                 try {
-                    let response = await this.$axios.put(`/comments`, {
+                    let response = await this.$axios.post(`/users/${this.token}/posts/${this.postid}/comments`, {
                         post_id: this.postid,
                         comment_id: '',
                         commenter: localStorage.getItem("commenter"),
@@ -52,6 +52,7 @@ export default {
                             'Authorization': `${this.token}`
                         }
                     });
+                    console.log(response.data)
                     this.inputComment = '';
                     this.getComments()
                     if (response.status === 204) {
@@ -64,7 +65,6 @@ export default {
                 this.errormsg= "before to comment a post insert a text "
             }
         },
-        async uncommentPhoto() {},
     },
     mounted() {
         this.getComments()

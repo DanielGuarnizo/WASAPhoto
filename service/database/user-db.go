@@ -2,6 +2,18 @@ package database
 
 import "fmt"
 
+func (db *appdbimpl) Validate(username string, id string) (is_valid bool, err error) {
+	count := 0
+	//  checking the exixtece of a user with the given username and userid and counting the occurences
+	err = db.c.QueryRow(`SELECT COUNT(*) FROM users WHERE user_id= ? AND username = ?`, id, username).Scan(&count)
+	is_valid = (count == 1)
+
+	if err != nil {
+		return false, err
+	}
+	return is_valid, nil
+}
+
 func (db *appdbimpl) SetUsername(newname string, userid string) (User, error) {
 	var user User
 	_, err := db.c.Exec(`UPDATE users SET username = ? WHERE user_id = ? `, newname, userid)

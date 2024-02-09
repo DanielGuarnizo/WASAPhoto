@@ -19,6 +19,7 @@ export default {
 				try {
 					let response = await this.$axios.post("/session", { username: this.usernameLogin})
 					this.user.user_id = response.data.user_id
+					console.log(response.data)
 					localStorage.setItem("token", this.user.user_id);
                     localStorage.setItem("usernameLogin", this.usernameLogin);
 										

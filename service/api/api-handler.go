@@ -15,15 +15,15 @@ func (rt *_router) Handler() http.Handler {
 
 	// LIKES OPERATIONS
 	// ? CHECKED
-	rt.router.PUT("/users/:userid/posts/:postid/likes", rt.wrap(rt.likePhoto))
+	rt.router.POST("/users/:userid/posts/:postid/likes", rt.wrap(rt.likePhoto))
 	// ? CHECKED
 	rt.router.GET("/users/:userid/posts/:postid/likes", rt.wrap(rt.getLikers))
 	// ? CHECKED
-	rt.router.DELETE("/users/:userid/posts/:postid/likes", rt.wrap(rt.unlikePhoto))
+	rt.router.DELETE("/users/:userid/posts/:postid/likes/:likerUsername", rt.wrap(rt.unlikePhoto))
 
 	// COMMENT OPERATIONS
 	// ? CHECKED
-	rt.router.PUT("/comments", rt.wrap(rt.commentPhoto))
+	rt.router.POST("/users/:userid/posts/:postid/comments", rt.wrap(rt.commentPhoto))
 	// ? CHECKED
 	rt.router.DELETE("/users/:userid/posts/:postid/comments/:commentid", rt.wrap(rt.uncommentPhoto))
 	// ? CHECKED
@@ -31,15 +31,15 @@ func (rt *_router) Handler() http.Handler {
 
 	// make post into user profile
 	// ? CHECKED
-	rt.router.PUT("/users/:userid/posts", rt.wrap(rt.uploadPhoto))
+	rt.router.POST("/users/:userid/posts", rt.wrap(rt.uploadPhoto))
 	// ? CHECKED
 	rt.router.DELETE("/users/:userid/posts/:postid", rt.wrap(rt.deletePhoto))
 
 	// follow functions
 	// ? CHECKED
-	rt.router.PUT("/users/:userid/follows/:username", rt.wrap(rt.followUser))
+	rt.router.POST("/users/:userid/following", rt.wrap(rt.followUser))
 	// ? CHECKED
-	rt.router.DELETE("/users/:userid/follows/:username", rt.wrap(rt.unfollowUser))
+	rt.router.DELETE("/users/:userid/following/:followed", rt.wrap(rt.unfollowUser))
 	// ? CHECKED
 	rt.router.GET("/users/:userid/following", rt.wrap(rt.getFollowing))
 	// ? CHECKED
@@ -47,16 +47,16 @@ func (rt *_router) Handler() http.Handler {
 
 	// Bans funcitons
 	// ? CHECKED
-	rt.router.GET("/users/:userid/bans/:username", rt.wrap(rt.getUserBans))
+	rt.router.POST("/users/:userid/bans", rt.wrap(rt.banUser))
 	// ? CHECKED
-	rt.router.PUT("/users/:userid/bans/:username", rt.wrap(rt.banUser))
+	rt.router.DELETE("/users/:userid/bans/:banished", rt.wrap(rt.unbanUser))
 	// ? CHECKED
-	rt.router.DELETE("/users/:userid/bans/:username", rt.wrap(rt.unbanUser))
+	rt.router.GET("/users/:userid/bans", rt.wrap(rt.getUserBans))
 
 	// main functions
 	// ? CHECKED
 	rt.router.GET("/users/:userid/profile", rt.wrap(rt.getUserProfile))
-
+	// ? CHECKED
 	rt.router.GET("/users/:userid/stream", rt.wrap(rt.getMyStream))
 
 	// Special routes

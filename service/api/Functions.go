@@ -1,8 +1,6 @@
 package api
 
 import (
-	"encoding/json"
-	"net/http"
 	"os"
 	"path/filepath"
 
@@ -16,29 +14,6 @@ import (
 func generateUniqueID() string {
 	id := uuid.New()
 	return id.String()
-}
-
-func Authentication(w http.ResponseWriter, r *http.Request, reqUserid string) bool {
-	userToken := r.Header.Get("Authorization")
-	if userToken != reqUserid || userToken == "" {
-		handleUnauthorizedError(w)
-		return false
-	} else {
-		return true
-	}
-}
-
-func handleUnauthorizedError(w http.ResponseWriter) {
-	w.WriteHeader(http.StatusUnauthorized)
-
-	// You can include additional information in the response body if needed
-	response := map[string]string{
-		"error":   "UnauthorizedError",
-		"message": "Authentication information is missing or invalid",
-	}
-
-	// Convert the response to JSON and write it to the response body
-	_ = json.NewEncoder(w).Encode(response)
 }
 
 func saveImageToFileSystem(postID string, image string) (string, error) {

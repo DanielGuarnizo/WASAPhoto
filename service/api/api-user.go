@@ -13,25 +13,33 @@ import (
 func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// get from the path the userid and handle error
+	// Get needed information to perfomr the operation
 	userid := ps.ByName("userid")
-	if userid == "" {
-		rt.baseLogger.Warning("the userid in the path is empty")
-		w.WriteHeader(http.StatusBadRequest)
+	username, _ := rt.db.GetName(userid)
+	id := r.Header.Get("Authorization")
+
+	// Authentication
+	is_valid, err := rt.db.Validate(username, id)
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
-	// Authentication
-	// authorized := Authentication(w, r, userid)
-	// if authorized == false {
-	// 	return
-	// }
 
 	// read and parse the json data from the request body into an username upadate object
 	type UsernameUpdate struct {
 		NewUsername string `json:"newUsername"`
 	}
 	var update UsernameUpdate
-	err := json.NewDecoder(r.Body).Decode(&update)
+	err = json.NewDecoder(r.Body).Decode(&update)
 	if err != nil {
 		// Handle error (e.g., invalid JSON format)
 		rt.baseLogger.WithError(err).Warning("invalid JSON format")
@@ -39,7 +47,7 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "bad request body"})
 		return
 	}
-	rt.baseLogger.Warning(update)
+
 	// defer closing the request body
 	defer r.Body.Close()
 
@@ -87,17 +95,27 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 
 func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
-	// retrieve the esential information to perfomr the operation
 
-	rt.baseLogger.Warning("enter in the get user profile")
-	// userid := ps.ByName("userid")
+	// Get needed information to perfomr the operation
+	userid := ps.ByName("userid")
+	name, _ := rt.db.GetName(userid)
 	username := r.URL.Query().Get("username")
+	id := r.Header.Get("Authorization")
 
 	// Authentication
-	// authorized := Authentication(w, r, userid)
-	// if authorized == false {
-	// 	return
-	// }
+	is_valid, err := rt.db.Validate(name, id)
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
+	}
 
 	// Get the user from the database given the username
 	var ReqUser User
