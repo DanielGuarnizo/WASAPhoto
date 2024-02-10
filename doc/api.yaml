@@ -445,7 +445,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/parameters/commentid"
+                $ref: "#/components/schemas/ID"
               
         '400':
           description: Bad request. Invalid user data.
@@ -590,7 +590,7 @@ paths:
             
       responses:
         "201":
-          description: Post eas created successfully
+          description: Post created successfully postid
           content:
             application/json:
               schema: 

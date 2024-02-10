@@ -307,6 +307,7 @@ export default {
                 this.$refs.fileInput.value = null;
                 this.base64Image = null;
                 
+                
                 this.getUserProfile();
                 console.log("realoading page")
                 window.location.reload();
