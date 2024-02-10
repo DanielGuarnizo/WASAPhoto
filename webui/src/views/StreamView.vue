@@ -29,7 +29,12 @@ export default {
     methods: {
         async getMyStream() {
             try {
-                let response = await this.$axios.get(`/users/${this.token}/stream`)
+                let response = await this.$axios.get(`/users/${this.token}/stream`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `${this.token}`
+                    }
+                })
                 // console.log(response)
                 this.Stream = response.data
                 // Assuming this.Stream.photos is an array of posts

@@ -337,7 +337,7 @@ paths:
         an user is trying to add a like to a post of another user 
       responses: 
         '204':
-          description: li added  successfully.
+          description: like added  successfully.
         '400':
           description: Bad request. Invalid user data.
         '401':
@@ -379,7 +379,17 @@ paths:
     parameters:
       - $ref: "#/components/parameters/userid"
       - $ref: "#/components/parameters/postid"
-      - $ref: "#/components/parameters/username"
+      - name: likerUsername
+        in: path
+        description: username to search for 
+        required: true
+        schema:
+          type: string
+          description: "username of the followed user"
+          example: "Daniel"
+          pattern: "^.*?$"
+          minLength: 3 
+          maxLength: 16
 
     delete: 
       security:
@@ -710,7 +720,17 @@ paths:
   /users/{userid}/followings/{followed}:
     parameters:
       - $ref: "#/components/parameters/userid"
-      - $ref: "#/components/parameters/username"
+      - name: followed
+        in: path
+        description: username to search for 
+        required: true
+        schema:
+          type: string
+          description: "username of the followed user"
+          example: "Daniel"
+          pattern: "^.*?$"
+          minLength: 3 
+          maxLength: 16
 
     delete:
       security: 
@@ -862,7 +882,17 @@ paths:
   /users/{userid}/bans/{banished}: 
     parameters:
       - $ref: "#/components/parameters/userid"
-      - $ref: "#/components/parameters/username"
+      - name: banished
+        in: path
+        description: username to search for 
+        required: true
+        schema:
+          type: string
+          description: "username of the followed user"
+          example: "Daniel"
+          pattern: "^.*?$"
+          minLength: 3 
+          maxLength: 16
 
     delete:
       security:
