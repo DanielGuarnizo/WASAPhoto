@@ -13,13 +13,31 @@ import (
 func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// Get needed information to perfomr the operation
+	// Get userid from the path and hanlde error
 	userid := ps.ByName("userid")
-	banisher, _ := rt.db.GetName(userid)
-	id := r.Header.Get("Authorization")
+	if userid == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get name that will be used to the authetication
+	banisher, err := rt.db.GetName(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
 
 	// Authentication
-	is_valid, err := rt.db.Validate(banisher, id)
+	id := r.Header.Get("Authorization")
+	is_valid, err = rt.db.Validate(banisher, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
 	if is_valid == false {
 		w.WriteHeader(http.StatusUnauthorized)
 
@@ -68,14 +86,32 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// Get needed information to perfomr the operation
+	// Get userid and banished from the path and hanlde error
 	userid := ps.ByName("userid")
-	banisher, _ := rt.db.GetName(userid)
-	id := r.Header.Get("Authorization")
 	banished := ps.ByName("banished")
+	if userid == "" || banished == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get name that will be used to the authetication
+	banisher, err := rt.db.GetName(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
 
 	// Authentication
-	is_valid, err := rt.db.Validate(banisher, id)
+	id := r.Header.Get("Authorization")
+	is_valid, err = rt.db.Validate(banisher, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in validate")
+		return
+	}
 	if is_valid == false {
 		w.WriteHeader(http.StatusUnauthorized)
 
@@ -117,14 +153,32 @@ func (rt *_router) getUserBans(w http.ResponseWriter, r *http.Request, ps httpro
 	w.Header().Set("Content-Type", "application/json")
 	// rt.baseLogger.Warning("enter in getUserBans")
 
-	// Get needed information to perfomr the operation
+	// Get userid and searchUsername from the path and hanlde error
 	userid := ps.ByName("userid")
-	username, _ := rt.db.GetName(userid)
-	id := r.Header.Get("Authorization")
 	searchUsername := r.URL.Query().Get("searchUsername")
+	if userid == "" || searchUsername == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get name that will be used to the authetication
+	username, err := rt.db.GetName(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
 
 	// Authentication
-	is_valid, err := rt.db.Validate(username, id)
+	id := r.Header.Get("Authorization")
+	is_valid, err = rt.db.Validate(username, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
 	if is_valid == false {
 		w.WriteHeader(http.StatusUnauthorized)
 

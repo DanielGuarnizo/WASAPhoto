@@ -14,13 +14,31 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	w.Header().Set("Content-Type", "application/json")
 	rt.baseLogger.Warning("Enter in the uploadPhoto function")
 
-	// Get needed information to perfomr the operation
+	// Get userid from the path and hanlde error
 	userid := ps.ByName("userid")
-	name, _ := rt.db.GetName(userid)
-	id := r.Header.Get("Authorization")
+	if userid == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
+	// Get name that will be used to the authetication
+	name, err := rt.db.GetName(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
+	
 	// Authentication
-	is_valid, err := rt.db.Validate(name, id)
+	id := r.Header.Get("Authorization")
+	is_valid, err = rt.db.Validate(name, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
 	if is_valid == false {
 		w.WriteHeader(http.StatusUnauthorized)
 
@@ -102,13 +120,27 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// Get needed information to perfomr the operation
+	// Get userid and postid from the path and hanlde error
 	userid := ps.ByName("userid")
 	postid := ps.ByName("postid")
-	name, _ := rt.db.GetName(userid)
-	id := r.Header.Get("Authorization")
+	if userid == "" || postid = "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
+	// Get name that will be used to the authetication
+	name, err := rt.db.GetName(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
+
+	
 	// Authentication
+	id := r.Header.Get("Authorization")
 	is_valid, err := rt.db.Validate(name, id)
 	if is_valid == false {
 		w.WriteHeader(http.StatusUnauthorized)

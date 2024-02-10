@@ -1,14 +1,13 @@
 package api
 
 import (
+	"WASAPhoto/service/api/reqcontext"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-
-	"WASAPhoto/service/api/reqcontext"
-	"database/sql"
-	"errors"
 )
 
 type JSONErrorMsg struct {
@@ -22,14 +21,32 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 	// Specify the content-type the server will return to the client
 	w.Header().Set("Content-Type", "application/json")
 
-	// Get needed information to perfomr the operation
+	// Get useri and postid from the path and hanlde error
 	userid := ps.ByName("userid")
 	postid := ps.ByName("postid")
-	liker, _ := rt.db.GetName(userid) // name of the userid
-	id := r.Header.Get("Authorization")
+	if userid == "" || postid == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid or postid in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get name that will be used to the authetication
+	liker, err := rt.db.GetName(userid) // name of the userid
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
 
 	// Authentication
-	is_valid, err := rt.db.Validate(liker, id)
+	id := r.Header.Get("Authorization")
+	is_valid, err = rt.db.Validate(liker, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
 	if is_valid == false {
 		w.WriteHeader(http.StatusUnauthorized)
 
@@ -60,14 +77,25 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// Get needed information to perfomr the operation
+	// Get userid, likerUsername and postid from the path and hanlde error
 	userid := ps.ByName("userid")
 	postid := ps.ByName("postid")
 	likerUsername := ps.ByName("likerUsername")
-	id := r.Header.Get("Authorization")
+	if userid == "" || postid == "" || likerUsername == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid, likerUsername or postid in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	// Authentication
+	id := r.Header.Get("Authorization")
 	is_valid, err := rt.db.Validate(likerUsername, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
 	if is_valid == false {
 		w.WriteHeader(http.StatusUnauthorized)
 
@@ -108,13 +136,43 @@ func (rt *_router) unlikePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 func (rt *_router) getLikers(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// Get userid and postid from the path and hanlde error
 	userid := ps.ByName("userid")
 	postid := ps.ByName("postid")
-
 	if postid == "" || userid == "" {
 		// Handle the case when "likeid" is not present in the request.
 		rt.baseLogger.Warning("the likeid in the path is empty")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get name that will be used to the authetication
+	username, err := rt.db.GetName(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
+
+	// Authentication
+	id := r.Header.Get("Authorization")
+	is_valid, err = rt.db.Validate(username, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
 

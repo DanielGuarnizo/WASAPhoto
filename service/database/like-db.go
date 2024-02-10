@@ -67,5 +67,8 @@ func (db *appdbimpl) GetLikers(postid string) ([]string, error) {
 		}
 		UserList = append(UserList, liker)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return UserList, nil
 }

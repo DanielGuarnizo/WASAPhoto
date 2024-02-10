@@ -4,6 +4,7 @@ import (
 	"WASAPhoto/service/api/reqcontext"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -28,7 +29,7 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 	// /rt.baseLogger.Warning(existingUser.User_ID)
 
 	// If the user doesn't exist, create a new user and return the identifier
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		// Generate a new unique ID  for the user
 		newUserid := generateUniqueID()
 

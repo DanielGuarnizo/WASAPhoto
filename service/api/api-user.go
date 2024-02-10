@@ -13,13 +13,31 @@ import (
 func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// Get needed information to perfomr the operation
+	// Get userid from the path and hanlde error
 	userid := ps.ByName("userid")
-	username, _ := rt.db.GetName(userid)
-	id := r.Header.Get("Authorization")
+	if userid == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get name that will be used to the authetication
+	username, err := rt.db.GetName(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
 
 	// Authentication
-	is_valid, err := rt.db.Validate(username, id)
+	id := r.Header.Get("Authorization")
+	is_valid, err = rt.db.Validate(username, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
 	if is_valid == false {
 		w.WriteHeader(http.StatusUnauthorized)
 
@@ -96,14 +114,32 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// Get needed information to perfomr the operation
+	// Get userid and username from the path,query  and hanlde error
 	userid := ps.ByName("userid")
-	name, _ := rt.db.GetName(userid)
 	username := r.URL.Query().Get("username")
-	id := r.Header.Get("Authorization")
+	if userid == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid in the path is empty or the username in query is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get name that will be used to the authetication
+	name, err := rt.db.GetName(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
 
 	// Authentication
+	id := r.Header.Get("Authorization")
 	is_valid, err := rt.db.Validate(name, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
 	if is_valid == false {
 		w.WriteHeader(http.StatusUnauthorized)
 
@@ -190,17 +226,44 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// Get userid from the path and hanlde error
 	userid := ps.ByName("userid")
+	if userid == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get name that will be used to the authetication
 	username, err := rt.db.GetName(userid)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
 		return
 	}
 
 	// Authentication
-	// authorized := Authentication(w, r, userid)
-	// if authorized == false {
-	// 	return
-	// }
+	id := r.Header.Get("Authorization")
+	is_valid, err = rt.db.Validate(username, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
+		return
+	}
 
 	// get the list of all the followees of the user given it's userid
 	followees, err := rt.db.GetFollowing(username)

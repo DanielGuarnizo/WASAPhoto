@@ -15,11 +15,29 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 
 	// Get needed information to perfomr the operation
 	userid := ps.ByName("userid")
-	username, _ := rt.db.GetName(userid)
-	id := r.Header.Get("Authorization")
+	if userid == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get name that will be used to the authetication
+	username, err := rt.db.GetName(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
 
 	// Authentication
-	is_valid, err := rt.db.Validate(username, id)
+	id := r.Header.Get("Authorization")
+	is_valid, err = rt.db.Validate(username, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
 	if is_valid == false {
 		w.WriteHeader(http.StatusUnauthorized)
 
@@ -68,14 +86,32 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// Get needed information to perfomr the operation
+	// Get userid from the path and hanlde error
 	userid := ps.ByName("userid")
 	followed := ps.ByName("followed")
-	follower, _ := rt.db.GetName(userid)
-	id := r.Header.Get("Authorization")
+	if userid == "" || followed == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid or followed in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get name that will be used to the authetication
+	follower, err := rt.db.GetName(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
 
 	// Authentication
-	is_valid, err := rt.db.Validate(follower, id)
+	id := r.Header.Get("Authorization")
+	is_valid, err = rt.db.Validate(follower, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
 	if is_valid == false {
 		w.WriteHeader(http.StatusUnauthorized)
 
@@ -114,13 +150,32 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 
 func (rt *_router) getFollowing(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
-	// Get needed information to perfomr the operation
+
+	// Get userid from the path and hanlde error
 	userid := ps.ByName("userid")
-	username, _ := rt.db.GetName(userid)
-	id := r.Header.Get("Authorization")
+	if userid == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get name that will be used to the authetication
+	username, err = rt.db.GetName(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
 
 	// Authentication
-	is_valid, err := rt.db.Validate(username, id)
+	id := r.Header.Get("Authorization")
+	is_valid, err = rt.db.Validate(username, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
 	if is_valid == false {
 		w.WriteHeader(http.StatusUnauthorized)
 
@@ -166,18 +221,46 @@ func (rt *_router) getFollowing(w http.ResponseWriter, r *http.Request, ps httpr
 }
 
 func (rt *_router) getFollowers(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
-
 	w.Header().Set("Content-Type", "application/json")
+
+	// Get userid from the path and hanlde error
 	userid := ps.ByName("userid")
+	if userid == "" {
+		// Handle the case when "likeid" is not present in the request.
+		rt.baseLogger.Warning("the userid in the path is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	// Retrieve usename of the user by using userid
 	username, err := rt.db.GetName(userid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting username")
+		return
+	}
 
 	// Authentication
+	id := r.Header.Get("Authorization")
+	is_valid, err = rt.db.Validate(username, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error in Validate")
+		return
+	}
+	if is_valid == false {
+		w.WriteHeader(http.StatusUnauthorized)
 
-	// authorized := Authentication(w, r, userid)
-	// if authorized == false {
-	// 	return
-	// }
+		// You can include additional information in the response body if needed
+		response := map[string]string{
+			"error":   "UnauthorizedError",
+			"message": "Authentication information is missing or invalid",
+		}
+
+		// Convert the response to JSON and write it to the response body
+		_ = json.NewEncoder(w).Encode(response)
+		return
+	}
 
 	// Get the list of following from the database
 	UserList, err := rt.db.GetFollowers(username)
