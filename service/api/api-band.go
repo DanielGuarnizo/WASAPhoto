@@ -32,7 +32,7 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 
 	// Authentication
 	id := r.Header.Get("Authorization")
-	is_valid, err = rt.db.Validate(banisher, id)
+	is_valid, err := rt.db.Validate(banisher, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error in Validate")
@@ -106,7 +106,7 @@ func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprout
 
 	// Authentication
 	id := r.Header.Get("Authorization")
-	is_valid, err = rt.db.Validate(banisher, id)
+	is_valid, err := rt.db.Validate(banisher, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error in validate")
@@ -173,7 +173,7 @@ func (rt *_router) getUserBans(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// Authentication
 	id := r.Header.Get("Authorization")
-	is_valid, err = rt.db.Validate(username, id)
+	is_valid, err := rt.db.Validate(username, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error in Validate")

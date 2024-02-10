@@ -30,10 +30,10 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		ctx.Logger.WithError(err).Error("error getting username")
 		return
 	}
-	
+
 	// Authentication
 	id := r.Header.Get("Authorization")
-	is_valid, err = rt.db.Validate(name, id)
+	is_valid, err := rt.db.Validate(name, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error in Validate")
@@ -123,7 +123,7 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 	// Get userid and postid from the path and hanlde error
 	userid := ps.ByName("userid")
 	postid := ps.ByName("postid")
-	if userid == "" || postid = "" {
+	if userid == "" || postid == "" {
 		// Handle the case when "likeid" is not present in the request.
 		rt.baseLogger.Warning("the userid in the path is empty")
 		w.WriteHeader(http.StatusBadRequest)
@@ -138,7 +138,6 @@ func (rt *_router) deletePhoto(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	
 	// Authentication
 	id := r.Header.Get("Authorization")
 	is_valid, err := rt.db.Validate(name, id)

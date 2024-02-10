@@ -32,7 +32,7 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 
 	// Authentication
 	id := r.Header.Get("Authorization")
-	is_valid, err = rt.db.Validate(username, id)
+	is_valid, err := rt.db.Validate(username, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error in Validate")
@@ -106,7 +106,7 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 
 	// Authentication
 	id := r.Header.Get("Authorization")
-	is_valid, err = rt.db.Validate(follower, id)
+	is_valid, err := rt.db.Validate(follower, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error in Validate")
@@ -161,7 +161,7 @@ func (rt *_router) getFollowing(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	// Get name that will be used to the authetication
-	username, err = rt.db.GetName(userid)
+	username, err := rt.db.GetName(userid)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error getting username")
@@ -170,7 +170,7 @@ func (rt *_router) getFollowing(w http.ResponseWriter, r *http.Request, ps httpr
 
 	// Authentication
 	id := r.Header.Get("Authorization")
-	is_valid, err = rt.db.Validate(username, id)
+	is_valid, err := rt.db.Validate(username, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error in Validate")
@@ -242,7 +242,7 @@ func (rt *_router) getFollowers(w http.ResponseWriter, r *http.Request, ps httpr
 
 	// Authentication
 	id := r.Header.Get("Authorization")
-	is_valid, err = rt.db.Validate(username, id)
+	is_valid, err := rt.db.Validate(username, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error in Validate")

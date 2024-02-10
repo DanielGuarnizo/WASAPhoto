@@ -41,7 +41,7 @@ func (rt *_router) likePhoto(w http.ResponseWriter, r *http.Request, ps httprout
 
 	// Authentication
 	id := r.Header.Get("Authorization")
-	is_valid, err = rt.db.Validate(liker, id)
+	is_valid, err := rt.db.Validate(liker, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error in Validate")
@@ -156,7 +156,7 @@ func (rt *_router) getLikers(w http.ResponseWriter, r *http.Request, ps httprout
 
 	// Authentication
 	id := r.Header.Get("Authorization")
-	is_valid, err = rt.db.Validate(username, id)
+	is_valid, err := rt.db.Validate(username, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error in Validate")

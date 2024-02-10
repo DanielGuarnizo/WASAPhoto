@@ -32,7 +32,7 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 
 	// Authentication
 	id := r.Header.Get("Authorization")
-	is_valid, err = rt.db.Validate(username, id)
+	is_valid, err := rt.db.Validate(username, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error in Validate")
@@ -245,7 +245,7 @@ func (rt *_router) getMyStream(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// Authentication
 	id := r.Header.Get("Authorization")
-	is_valid, err = rt.db.Validate(username, id)
+	is_valid, err := rt.db.Validate(username, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("error in Validate")
