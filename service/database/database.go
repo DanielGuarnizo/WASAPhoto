@@ -99,6 +99,8 @@ type AppDatabase interface {
 	SetUsername(string, string) (User, error)
 	GetUserByName(string) (User, error)
 	GetName(string) (string, error)
+	GetUserID(string) (string, error)
+	GetUserIdPost(string) (string, error)
 	CreateUser(string, string) error
 
 	// photo methods

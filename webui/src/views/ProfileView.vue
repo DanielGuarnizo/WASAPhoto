@@ -147,7 +147,8 @@ export default {
                         'Authorization': `${this.token}`
                     } 
                 })
-                if (response.status === 204) {
+                console.log(response.data)
+                if (response.status === 201) {
                     this.banisher = true
                 } 
             } catch {
@@ -206,6 +207,7 @@ export default {
                     } 
                 });
                 this.follower = true 
+                console.log(response.data);
                 console.log(response.status);
                 console.log("realoading page")
                 window.location.reload();

@@ -47,7 +47,7 @@ export default {
         },
         async likePhoto() {
             try {
-                console.log(this.token)
+                
                 let response = await this.$axios.post(`/users/${this.token}/posts/${this.postData.post_id}/likes`,{
                     
                 },{
@@ -55,7 +55,8 @@ export default {
                         'Authorization': `${this.token}`
                     }
                 })
-                console.log(response.data)
+                console.log(response.data);
+                console.log(response.status);
                 this.liked = true
                 console.log("realoading page")
                 window.location.reload();

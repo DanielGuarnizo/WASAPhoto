@@ -12,7 +12,7 @@ import (
 
 func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
 	// Parse the JSON request body into a User object
-	rt.baseLogger.Warning("Enter in the session function")
+	// rt.baseLogger.Warning("Enter in the session function")
 
 	type Body struct {
 		Username string
@@ -49,6 +49,6 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 
 	// If the user already exists, return the existing user identifier
 	response := map[string]string{"user_id": existingUser.User_ID}
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	_ = json.NewEncoder(w).Encode(response)
 }

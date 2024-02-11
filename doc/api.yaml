@@ -336,8 +336,12 @@ paths:
       description: |- 
         an user is trying to add a like to a post of another user 
       responses: 
-        '204':
-          description: like added  successfully.
+        "201":
+          description: the like succesffully upload , return the userid of the liked user 
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ID"
         '400':
           description: Bad request. Invalid user data.
         '401':
@@ -676,8 +680,12 @@ paths:
                   maxLength: 16
       
       responses:
-        "204":
-          description: "User follow Succesfully"
+        "201":
+          description: the follow operation succesfully done , return user_id of the followed user 
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ID"
         '400':
           description: Bad request. Invalid user data.
             
@@ -834,8 +842,12 @@ paths:
                   maxLength: 16
 
       responses:
-        '204':
-          description: User baned successfully.
+        "201":
+          description: Ban user succedfully complete and return user_id of the banished user 
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ID"
 
         '400':
           description: Bad request. Invalid user data.

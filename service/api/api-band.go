@@ -78,8 +78,33 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 
-	// Respond with a 204 status code (success, no content)
-	w.WriteHeader(http.StatusNoContent)
+	// retrieve user_id to return
+	UserID, err := rt.db.GetUserID(input.Banished)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting user_id")
+		return
+	}
+
+	// Encode the UserID in to a variable before writing it to the response writer
+	response, err := json.Marshal(UserID)
+	if err != nil {
+		rt.baseLogger.WithError(err).Warning("Error encoding UserList for response")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
+		return
+	}
+
+	// Write the encoded response to the response writer
+	w.WriteHeader(http.StatusCreated)
+	// rt.baseLogger.Warning(UserList)
+	_, err = w.Write(response)
+	if err != nil {
+		rt.baseLogger.WithError(err).Warning("Error writing response")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Internal server error"})
+		return
+	}
 
 }
 

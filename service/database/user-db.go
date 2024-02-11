@@ -44,3 +44,15 @@ func (db *appdbimpl) CreateUser(newUserid string, username string) error {
 	}
 	return nil
 }
+
+func (db *appdbimpl) GetUserID(username string) (string, error) {
+	var UserID string
+	err := db.c.QueryRow("SELECT user_id FROM users WHERE username=?", username).Scan(&UserID)
+	return UserID, err
+}
+
+func (db *appdbimpl) GetUserIdPost(post_id string) (string, error) {
+	var UserID string
+	err := db.c.QueryRow("SELECT user_id FROM posts WHERE post_id=?", post_id).Scan(&UserID)
+	return UserID, err
+}
