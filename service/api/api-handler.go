@@ -37,26 +37,26 @@ func (rt *_router) Handler() http.Handler {
 
 	// follow functions
 	// ? CHECKED
-	rt.router.POST("/users/:userid/following", rt.wrap(rt.followUser))
+	rt.router.POST("/users/:userid/followings", rt.wrap(rt.followUser))
 	// ? CHECKED
-	rt.router.DELETE("/users/:userid/following/:followed", rt.wrap(rt.unfollowUser))
+	rt.router.DELETE("/users/:userid/followings/:followed", rt.wrap(rt.unfollowUser))
 	// ? CHECKED
-	rt.router.GET("/users/:userid/following", rt.wrap(rt.getFollowing))
+	rt.router.GET("/users/:userid/followings", rt.wrap(rt.getFollowing))
 	// ? CHECKED
 	rt.router.GET("/users/:userid/followers", rt.wrap(rt.getFollowers))
 
 	// Bans funcitons
-	// ? CHECKED
+
 	rt.router.POST("/users/:userid/bans", rt.wrap(rt.banUser))
-	// ? CHECKED
+
 	rt.router.DELETE("/users/:userid/bans/:banished", rt.wrap(rt.unbanUser))
-	// ? CHECKED
+
 	rt.router.GET("/users/:userid/bans", rt.wrap(rt.getUserBans))
 
 	// main functions
-	// ? CHECKED
+
 	rt.router.GET("/users/:userid/profile", rt.wrap(rt.getUserProfile))
-	// ? CHECKED
+
 	rt.router.GET("/users/:userid/stream", rt.wrap(rt.getMyStream))
 
 	// Special routes

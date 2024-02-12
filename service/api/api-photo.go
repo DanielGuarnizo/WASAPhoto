@@ -12,7 +12,7 @@ import (
 
 func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
-	rt.baseLogger.Warning("Enter in the uploadPhoto function")
+	// rt.baseLogger.Warning("Enter in the uploadPhoto function")
 
 	// Get userid from the path and hanlde error
 	userid := ps.ByName("userid")

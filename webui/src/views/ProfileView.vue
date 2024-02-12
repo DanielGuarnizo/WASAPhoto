@@ -197,7 +197,7 @@ export default {
         },
         async followUser() {
             try {
-                const response = await this.$axios.post(`/users/${this.token}/following`,{
+                const response = await this.$axios.post(`/users/${this.token}/followings`,{
                     searchUsername: this.searchUsername
                 },
                 {
@@ -218,7 +218,7 @@ export default {
         },
         async unfollowUser() {
             try {
-                const response = await this.$axios.delete(`/users/${this.token}/following/${this.searchUsername}`,{
+                const response = await this.$axios.delete(`/users/${this.token}/followings/${this.searchUsername}`,{
                     headers : {
                         'Authorization': `${this.token}`
                     }
@@ -233,7 +233,7 @@ export default {
         },
         async isFollower() {
             try {
-                const response = await this.$axios.get(`/users/${this.token}/following`, {
+                const response = await this.$axios.get(`/users/${this.token}/followings`, {
                     headers: {
                         Authorization: this.token
                     } 

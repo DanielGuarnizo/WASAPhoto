@@ -100,7 +100,8 @@ export default {
     </div>
     <div class="header-stream">
 
-        <Post v-for="post in this.Posts" :postData="post" />
+        <!-- <Post v-for="post in this.Posts" :postData="post" /> -->
+        <Post v-for="post in Posts" :key="post.post_id" v-bind="post" :postData="post"/>
     </div>
     <ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 </template>

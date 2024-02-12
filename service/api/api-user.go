@@ -117,7 +117,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	// Get userid and username from the path,query  and hanlde error
 	userid := ps.ByName("userid")
 	username := r.URL.Query().Get("username")
-	if userid == "" {
+	if userid == "" || username == "" {
 		// Handle the case when "likeid" is not present in the request.
 		rt.baseLogger.Warning("the userid in the path is empty or the username in query is empty")
 		w.WriteHeader(http.StatusBadRequest)
@@ -154,19 +154,19 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	// Get the user from the database given the username
-	var ReqUser User
-	dbReqUser, err := rt.db.GetUserByName(username)
-	if err != nil {
-		rt.baseLogger.WithError(err).Warning("Error checking if user exists")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	ReqUser.UserFromDataBase(dbReqUser)
+	// var ReqUser User
+	// dbReqUser, err := rt.db.GetUserByName(username)
+	// if err != nil {
+	// 	rt.baseLogger.WithError(err).Warning("Error checking if user exists")
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// 	return
+	// }
+	// ReqUser.UserFromDataBase(dbReqUser)
 
 	// retrive all the data needed for fetch profile given the request user
 	var profile Profile
 	// var photos []Post
-	dbPhotos, err := rt.db.GetPhotos(ReqUser.User_ID)
+	dbPhotos, err := rt.db.GetPhotos(userid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error getting photos from database")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -177,12 +177,15 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	apiPhotos := GetPhotosFromDatabase(dbPhotos)
 
 	// fetch profile
+	var ReqUser User
+	ReqUser.User_ID = userid
+	ReqUser.Username = username
 	{
 		profile.User = ReqUser
 		profile.Photos = apiPhotos
 		profile.NumberOfPosts = len(apiPhotos)
 
-		count1, err := rt.db.GetNumberOfFollowers(ReqUser.Username)
+		count1, err := rt.db.GetNumberOfFollowers(username)
 		if err != nil {
 			rt.baseLogger.WithError(err).Warning("Error getting number of followers from database")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -191,7 +194,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 		}
 		profile.UserFollowers = count1
 
-		count2, err := rt.db.GetNumberOfFollowing(ReqUser.Username)
+		count2, err := rt.db.GetNumberOfFollowing(username)
 		if err != nil {
 			rt.baseLogger.WithError(err).Warning("Error getting number of following from database")
 			w.WriteHeader(http.StatusInternalServerError)

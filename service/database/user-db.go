@@ -2,10 +2,11 @@ package database
 
 import "fmt"
 
-func (db *appdbimpl) Validate(username string, id string) (is_valid bool, err error) {
+func (db *appdbimpl) Validate(username string, id string) (bool, error) {
 	count := 0
+	var is_valid bool
 	//  checking the exixtece of a user with the given username and userid and counting the occurences
-	err = db.c.QueryRow(`SELECT COUNT(*) FROM users WHERE user_id= ? AND username = ?`, id, username).Scan(&count)
+	err := db.c.QueryRow(`SELECT COUNT(*) FROM users WHERE user_id= ? AND username = ?`, id, username).Scan(&count)
 	is_valid = (count == 1)
 
 	if err != nil {
