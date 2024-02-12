@@ -22,6 +22,7 @@ components:
         WWW_Authenticate:
           schema:
             type: string
+            description: Access token is missing or invalid
 
   parameters:
     userid:
@@ -47,19 +48,6 @@ components:
       required: true 
       schema:
         $ref: "#/components/schemas/ID"
-
-    username: 
-      name: username
-      in: path
-      description: username to search for 
-      required: true
-      schema:
-        type: string
-        description: "username of the followed user"
-        example: "Daniel"
-        pattern: "^.*?$"
-        minLength: 3 
-        maxLength: 16
 
   schemas:
     ID: 
@@ -146,8 +134,8 @@ components:
           description: "this specify the date in which the post was done and the time"
           format: data-time
           pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
-          maxLength: 19 
-          minLength: 19
+          maxLength: 20
+          minLength: 20
           example: 2022-01-01T12:34:56Z
         
         # the main object of this app are the image
@@ -292,6 +280,7 @@ paths:
           application/json: 
             schema:
               type: object 
+              description: Login schema 
               properties:
                 name:
                   type: string 
@@ -308,6 +297,7 @@ paths:
             application/json:
               schema:
                 type: object
+                description: userd id of the already loged user or new user
                 properties:
                   user_id:
                     $ref: "#/components/schemas/ID"
@@ -546,6 +536,7 @@ paths:
           application/json:
             schema:
               type: object
+              description: schema of the new username 
               properties:
                 newUsername:
                   type: string
@@ -670,6 +661,7 @@ paths:
           application/json:
             schema:
               type: object
+              description: schema of the name the user wants to follow 
               properties:
                 newUsername:
                   type: string
@@ -832,6 +824,7 @@ paths:
           application/json:
             schema:
               type: object
+              description: schema of the name the user wants to ban
               properties:
                 newUsername:
                   type: string
