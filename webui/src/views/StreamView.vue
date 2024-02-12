@@ -76,6 +76,9 @@ export default {
 </script>
 
 <template>
+    
+
+
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
 
         <div class="input-group mb-3">
@@ -88,16 +91,23 @@ export default {
                 aria-label="Recipient's username"
                 aria-describedby="basic-addon2">
             <div class="input-group-append">
-                <button class="btn btn-success" type="button" @click="getProfile(this.searchUsername)">Search </button>
+                <button class="btn btn-success" type="button" @click="getProfile(searchUsername)">Search</button>
             </div>
         </div>
 
-        <div>
-            <button @click="getProfile(this.usernameLogin)" >
-                     <p>{{ this.usernameLogin }} profile</p>
+        <div class="d-flex">
+            <button class="btn btn-primary me-2 btn-block" @click="getProfile(usernameLogin)">
+                <p>{{ usernameLogin }} profile</p>
             </button>
+            <RouterLink to="/" class="btn btn-warning btn-block btn-primary-style">
+                <p>Logout</p>
+            </RouterLink>
+
         </div>
     </div>
+
+
+
     <div class="header-stream">
 
         <!-- <Post v-for="post in this.Posts" :postData="post" /> -->
@@ -113,5 +123,13 @@ export default {
   padding: 10px;
   background-color: #fff;
   /* Add other styling for the post container */
+}
+
+.btn-primary-style {
+    /* Add your desired styling for the router link here */
+    /* For example, you can set a fixed width and height */
+
+    height: 40px;
+    /* You can also adjust other styles as needed */
 }
 </style>

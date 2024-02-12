@@ -337,6 +337,23 @@ export default {
 </script>
 
 <template>
+    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <div class="position-sticky pt-3 sidebar-sticky">
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+                <span>General</span>
+            </h6>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <RouterLink to='/users/:userid/stream' class="nav-link">
+                        <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#home"/></svg>
+                        Home
+                    </RouterLink>
+                </li>
+            </ul>
+
+    
+        </div>
+    </nav>
     <ErrorMsg v-if="this.errormsg" :msg="this.errormsg"></ErrorMsg>
     <div v-else >
         <div v-if="Owner" class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 ">
@@ -356,8 +373,8 @@ export default {
     
         </div>
         <div v-else>
-            <button v-if="!banisher" class="btn btn-success" type="button" @click="banUser()" > Band User </button>
-            <button v-else class="btn btn-success" type="button" @click="unBanUser()" > Unband User </button>
+            <button v-if="!banisher" class="btn btn-success" type="button" @click="banUser()" > Ban User </button>
+            <button v-else class="btn btn-success" type="button" @click="unBanUser()" > Unban User </button>
         </div>
     
     
