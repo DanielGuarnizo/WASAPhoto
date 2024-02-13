@@ -92,7 +92,8 @@ func (db *appdbimpl) GetLastPosts(usernames []string) ([]Post, error) {
 				&post.NumberOfLikes,
 			)
 			if err != nil {
-				return nil, err
+				// return nil, err
+				continue
 			}
 
 			// Populate the Comments and Likes lists

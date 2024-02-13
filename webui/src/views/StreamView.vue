@@ -56,7 +56,10 @@ export default {
             } else {
                 try {
                     //let response = await this.$axios.get(`/users/${this.token}/profile?username=${u}`)
+                    console.log("|||||||||||||||||||||||||||||||||||||||||"+this.usernameLogin)
+                    console.log("|||||||||||||||||||||||||" +this.searchUsername)
                     localStorage.setItem("searchUsername", u)
+                    localStorage.setItem("usernameLogin", this.usernameLogin);
                     this.$router.push(`/users/${this.token}/profile?username=${u}`)
                 } catch (e) {
                     console.error(e);
@@ -85,19 +88,19 @@ export default {
             <input 
                 type="text" 
                 id="username" 
-                v-model="searchUsername" 
+                v-model="this.searchUsername" 
                 class="form-control"
                 placeholder="Who you want to search" 
                 aria-label="Recipient's username"
                 aria-describedby="basic-addon2">
             <div class="input-group-append">
-                <button class="btn btn-success" type="button" @click="getProfile(searchUsername)">Search</button>
+                <button class="btn btn-success" type="button" @click="getProfile(this.searchUsername)">Search</button>
             </div>
         </div>
 
         <div class="d-flex">
-            <button class="btn btn-primary me-2 btn-block" @click="getProfile(usernameLogin)">
-                <p>{{ usernameLogin }} profile</p>
+            <button class="btn btn-primary me-2 btn-block" @click="getProfile(this.usernameLogin)">
+                <p>{{ this.usernameLogin }} profile</p>
             </button>
             <RouterLink to="/" class="btn btn-warning btn-block btn-primary-style">
                 <p>Logout</p>

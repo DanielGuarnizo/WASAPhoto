@@ -123,6 +123,12 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	searchUserid, err := rt.db.GetUserID(username)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("error getting search userid ")
+		return
+	}
 
 	// Get name that will be used to the authetication
 	name, err := rt.db.GetName(userid)
@@ -151,6 +157,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 
 		// Convert the response to JSON and write it to the response body
 		_ = json.NewEncoder(w).Encode(response)
+		return
 	}
 
 	// Get the user from the database given the username
@@ -166,7 +173,7 @@ func (rt *_router) getUserProfile(w http.ResponseWriter, r *http.Request, ps htt
 	// retrive all the data needed for fetch profile given the request user
 	var profile Profile
 	// var photos []Post
-	dbPhotos, err := rt.db.GetPhotos(userid)
+	dbPhotos, err := rt.db.GetPhotos(searchUserid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error getting photos from database")
 		w.WriteHeader(http.StatusInternalServerError)

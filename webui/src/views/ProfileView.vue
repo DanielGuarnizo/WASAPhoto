@@ -83,7 +83,7 @@ export default {
                     }
                 });
                 const UserList = response.data;
-
+                console.log("before the if inside the try in checkifbanished")
                 // Check is the username is in the list if empty then the serachUsername has not baned persons
                 if (UserList === null) {
                     this.banished = false 
@@ -114,7 +114,9 @@ export default {
             }
         },
         async getUserProfile() {
-            console.log("inside the get user profile")
+            console.log("||| inside the get user profile")
+            console.log(this.usernameLogin)
+            console.log(this.searchUsername)
             try {
                 console.log("get user profile try")
                 let response = await this.$axios.get(`/users/${this.token}/profile?username=${this.searchUsername}`, {

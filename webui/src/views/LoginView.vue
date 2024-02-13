@@ -52,7 +52,7 @@ export default {
         <h1 class="h2">Welcome to WASAPhoto</h1>
     </div>
     <div class="input-group mb-3">
-        <input type="text" id="username" v-model="usernameLogin" class="form-control"
+        <input type="text" id="username" v-model="this.usernameLogin" class="form-control"
             placeholder="Insert a username to log in WASAPhoto." aria-label="Recipient's username"
             aria-describedby="basic-addon2">
         <div class="input-group-append">
