@@ -48,7 +48,7 @@ func (db *appdbimpl) GetUserID(username string) (string, error) {
 	var UserID string
 	err := db.c.QueryRow("SELECT user_id FROM users WHERE username=?", username).Scan(&UserID)
 	if err != nil {
-		return nil, err
+		return UserID, err
 	}
 	return UserID, nil
 }
@@ -57,7 +57,7 @@ func (db *appdbimpl) GetUserIdPost(post_id string) (string, error) {
 	var UserID string
 	err := db.c.QueryRow("SELECT user_id FROM posts WHERE post_id=?", post_id).Scan(&UserID)
 	if err != nil {
-		return nil, err
+		return UserID, err
 	}
 	return UserID, nil
 }
