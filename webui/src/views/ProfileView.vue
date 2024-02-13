@@ -15,6 +15,8 @@ export default {
             selectedFile: null,
             base64Image: null,
             formattedDate: '',
+            followings: [],
+            followers: [],
             searchUsername: localStorage.getItem("searchUsername") || "DefaultUsername",
             usernameLogin: localStorage.getItem("usernameLogin"),
             token: localStorage.getItem("token"),
@@ -239,6 +241,7 @@ export default {
                     } 
                 })
                 const UserList = response.data;
+                this.followings = response.data;
                 // Check is the username is in the list if empty then the serachUsername has not baned persons
                 if (UserList === null) {
                     this.follower = false 
@@ -252,6 +255,18 @@ export default {
                     return
                 }
 
+            } catch {
+
+            }
+        },
+        async getFollowers () {
+            try {
+                const response = await this.$axios.get(`/users/${this.token}/followers`, {
+                    headers: {
+                        Authorization: this.token
+                    } 
+                })
+                this.followers = response.data
             } catch {
 
             }
@@ -318,12 +333,41 @@ export default {
                 console.error(error);
             }
         },
+        openPopup(stringList) {
+            // Get the pop-up container and content elements
+            var popupContainer = document.getElementById("popupContainer");
+            var popupContent = document.getElementById("popupContent");
+
+            // Simulated list of strings (replace this with your actual data)
+            // var stringList = this.followers
+
+            // Build the HTML content for the list of strings
+            var listHTML = "<ul>";
+            stringList.forEach(function (item) {
+                listHTML += "<li>" + item + "</li>";
+            });
+            listHTML += "</ul>";
+
+            // Set the content of the pop-up
+            popupContent.innerHTML = listHTML;
+
+            // Display the pop-up
+            popupContainer.style.display = "block";
+        },
+
+            // You can also add a function to close the pop-up if needed
+        closePopup() {
+            var popupContainer = document.getElementById("popupContainer");
+            popupContainer.style.display = "none";
+        },
+        
     },
     mounted() {
         console.log("user profile Component is mounted")
         this.checkIfBanished()
         this.checkIfBanisher()
         this.isFollower()
+        this.getFollowers()
         const currentDate = new Date();
         this.formattedDate = currentDate.toISOString().slice(0, 19).replace('T', ' ');
     }, 
@@ -395,9 +439,21 @@ export default {
                 </div>
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 ">
                     <p>Number of Posts {{ this.profile.numberOfPosts }}</p>
-                    <button @click="getFollowers">Number of Followers {{ this.profile.userFollowers }}</button>
-                    <button @click="getFollowing">Number of Followings {{ this.profile.userFollowing }}</button>
+                    <button @click="openPopup(this.followers)">Number of Followers {{ this.profile.userFollowers }}</button>
+                    <!-- Pop-up Container -->
+                    <div id="popupContainer" class="popup-container" @click="closePopup">
+                        <div id="popupContent" class="popup-content">
+                            <!-- Content of the pop-up (list of strings) will be inserted here -->
+                        </div>
                     
+                    </div>
+                    <button @click="openPopup(this.followings)">Number of Followings {{ this.profile.userFollowing }}</button>
+                    <div id="popupContainer" class="popup-container" @click="closePopup">
+                        <div id="popupContent" class="popup-content">
+                            <!-- Content of the pop-up (list of strings) will be inserted here -->
+                        </div>
+                    
+                    </div>
                 </div>
                 <Post v-for="post in Posts" :key="post.post_id" v-bind="post" :postData="post"/>
             </div>
@@ -413,6 +469,27 @@ export default {
   padding: 10px;
   background-color: #fff;
   /* Add other styling for the post container */
+}
+
+.popup-container {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.popup-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 

@@ -27,7 +27,7 @@ func saveImageToFileSystem(postID string, image string) (string, error) {
 	rootDir := filepath.Join(currentDir, "..", "..")
 
 	// Create the directory if it doesn't exist
-	photoDir := filepath.Join(rootDir, "service", "api", "photos")
+	photoDir := filepath.Join(rootDir, "tmp", "photo")
 	if err := os.MkdirAll(photoDir, 0755); err != nil {
 		return "", err
 	}

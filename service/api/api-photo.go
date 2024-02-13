@@ -74,6 +74,7 @@ func (rt *_router) uploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// Save the image to the file system
 	imagePath, err := saveImageToFileSystem(postid, p.Image)
+	rt.baseLogger.Warning(imagePath)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error saving image to file system")
 		w.WriteHeader(http.StatusInternalServerError)
