@@ -170,7 +170,7 @@ func GetPhotosFromDatabase(dbPhotos []database.Post) []Post {
 // 	FollowedUsername string `json:"followedUsername"`
 // }
 
-// Band structure
+// Ban structure
 
 type MuteRequest struct {
 	MutedUserID string

@@ -121,10 +121,10 @@ type AppDatabase interface {
 	GetFollowingN(string) ([]string, error)
 	GetFollowers(string) ([]string, error)
 
-	// band methods
+	// ban methods
 	GetBans(string) ([]string, error)
-	BandUser(string, string, string) error
-	UnbandUser(string, string) error
+	BanUser(string, string, string) error
+	UnbanUser(string, string) error
 
 	// the name of the parameter is up to the implementation of the interface
 	// we only define the type of the parameter the method should have

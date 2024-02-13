@@ -1,5 +1,10 @@
 package database
 
+import (
+	"database/sql"
+	"errors"
+)
+
 func (db *appdbimpl) GetBans(username string) ([]string, error) {
 	var UserList []string
 
@@ -25,15 +30,34 @@ func (db *appdbimpl) GetBans(username string) ([]string, error) {
 	return UserList, nil
 }
 
-func (db *appdbimpl) BandUser(banisher string, banished string, userid string) error {
+func (db *appdbimpl) BanUser(banisher string, banished string, userid string) error {
 	_, err := db.c.Exec(`INSERT INTO bans (banisher, banished, user_id) VALUES (?,?,?)`, banisher, banished, userid)
 	if err != nil {
 		return err
 	}
+
+	// Remove followed from banished to banisher
+	_, err = db.c.Exec(`DELETE FROM followees WHERE followed = ? AND follower = ? `, banisher, banished)
+	if !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
+	if err != nil {
+		return err
+	}
+
+	// Remove followed from banisher to banished
+	_, err = db.c.Exec(`DELETE FROM followees WHERE followed = ? AND follower = ? `, banished, banisher)
+	if !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (db *appdbimpl) UnbandUser(banisher string, banished string) error {
+func (db *appdbimpl) UnbanUser(banisher string, banished string) error {
 	_, err := db.c.Exec(`DELETE FROM bans WHERE banisher = ? AND banished = ? `, banisher, banished)
 	if err != nil {
 		return err

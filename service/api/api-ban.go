@@ -70,7 +70,7 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 	defer r.Body.Close()
 
 	// Save into the database the baned relationship
-	err = rt.db.BandUser(banisher, input.Banished, userid)
+	err = rt.db.BanUser(banisher, input.Banished, userid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Error saving baned user into database")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -152,7 +152,7 @@ func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprout
 	}
 
 	// Remove the user from the baned collection in the database
-	err = rt.db.UnbandUser(banisher, banished)
+	err = rt.db.UnbanUser(banisher, banished)
 	if err != nil {
 		// Check if the error is of the same type as sql.ErrNoRows
 		if errors.Is(err, sql.ErrNoRows) {
