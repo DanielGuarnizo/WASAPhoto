@@ -1,17 +1,15 @@
 package database
 
-import "fmt"
-
 func (db *appdbimpl) Validate(username string, id string) (bool, error) {
-	count := 0
+	var count int
 	var is_valid bool
 	//  checking the exixtece of a user with the given username and userid and counting the occurences
 	err := db.c.QueryRow(`SELECT COUNT(*) FROM users WHERE user_id= ? AND username = ?`, id, username).Scan(&count)
-	is_valid = (count == 1)
-
 	if err != nil {
 		return false, err
 	}
+	is_valid = (count == 1)
+
 	return is_valid, nil
 }
 
@@ -41,7 +39,7 @@ func (db *appdbimpl) GetUserByName(username string) (User, error) {
 func (db *appdbimpl) CreateUser(newUserid string, username string) error {
 	_, err := db.c.Exec(`INSERT INTO users (user_id,username) VALUES (?,?)`, newUserid, username)
 	if err != nil {
-		return fmt.Errorf("error executing SQL query: %w", err)
+		return err
 	}
 	return nil
 }
@@ -49,11 +47,17 @@ func (db *appdbimpl) CreateUser(newUserid string, username string) error {
 func (db *appdbimpl) GetUserID(username string) (string, error) {
 	var UserID string
 	err := db.c.QueryRow("SELECT user_id FROM users WHERE username=?", username).Scan(&UserID)
-	return UserID, err
+	if err != nil {
+		return nil, err
+	}
+	return UserID, nil
 }
 
 func (db *appdbimpl) GetUserIdPost(post_id string) (string, error) {
 	var UserID string
 	err := db.c.QueryRow("SELECT user_id FROM posts WHERE post_id=?", post_id).Scan(&UserID)
-	return UserID, err
+	if err != nil {
+		return nil, err
+	}
+	return UserID, nil
 }

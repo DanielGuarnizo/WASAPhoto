@@ -37,8 +37,7 @@ func (db *appdbimpl) GetComments(postid string) ([]Comment, error) {
 			&comment.Body,
 		)
 		if err != nil {
-
-			continue
+			return nil, err
 		}
 		comments = append(comments, comment)
 	}

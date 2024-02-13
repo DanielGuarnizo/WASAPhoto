@@ -48,7 +48,6 @@ func (db *appdbimpl) GetFollowing(username string) ([]string, error) {
 		var followee string
 		if err := rows.Scan(&followee); err != nil {
 			return nil, err
-
 		}
 		following = append(following, followee)
 	}
@@ -56,7 +55,6 @@ func (db *appdbimpl) GetFollowing(username string) ([]string, error) {
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
-
 	return following, nil
 }
 
@@ -74,7 +72,6 @@ func (db *appdbimpl) GetFollowingN(username string) ([]string, error) {
 		var followee string
 		if err := rows.Scan(&followee); err != nil {
 			return nil, err
-
 		}
 		following = append(following, followee)
 	}

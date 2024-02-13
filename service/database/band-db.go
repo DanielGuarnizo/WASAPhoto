@@ -14,7 +14,7 @@ func (db *appdbimpl) GetBans(username string) ([]string, error) {
 	for rows.Next() {
 		var banished string
 		if err := rows.Scan(&banished); err != nil {
-			continue
+			return nil, err
 		}
 		UserList = append(UserList, banished)
 	}

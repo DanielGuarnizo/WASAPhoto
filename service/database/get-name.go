@@ -4,5 +4,8 @@ package database
 func (db *appdbimpl) GetName(userid string) (string, error) {
 	var name string
 	err := db.c.QueryRow("SELECT username FROM users WHERE user_id=?", userid).Scan(&name)
-	return name, err
+	if err != nil {
+		return nil, err
+	}
+	return name, nil
 }
