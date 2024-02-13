@@ -41,8 +41,8 @@ export default {
                 window.location.reload();
                 // this.$router.push(`/users/${this.token}/profile?username=${this.usernameLogin}`)
                 // this.$router.push(`/users/${this.token}/stream`)
-            } catch {
-
+            } catch (e) {
+                console.error(e);
             }
         },
         async likePhoto() {
@@ -58,8 +58,8 @@ export default {
                 console.log(response.data);
                 console.log(response.status);
                 this.liked = true
-                console.log("realoading page")
-                window.location.reload();
+                // console.log("realoading page")
+                // window.location.reload();
                 
             } catch (e) {
                 console.error(e);
@@ -74,8 +74,8 @@ export default {
                 })
                 if(response.status === 204) {
                     this.liked = false 
-                    console.log("realoading page")
-                    window.location.reload();
+                    // console.log("realoading page")
+                    // window.location.reload();
                     return
                 }
             } catch (e){

@@ -14,11 +14,46 @@ func (db *appdbimpl) Validate(username string, id string) (bool, error) {
 }
 
 func (db *appdbimpl) SetUsername(newname string, userid string) (User, error) {
+	var oldUsername string
 	var user User
-	_, err := db.c.Exec(`UPDATE users SET username = ? WHERE user_id = ? `, newname, userid)
+
+	// Seect old name
+	err := db.c.QueryRow(`SELECT username FROM users WHERE user_id = ? `, userid).Scan(&oldUsername)
 	if err != nil {
 		return user, err
 	}
+	// Update the new name
+	_, err = db.c.Exec(`UPDATE users SET username = ? WHERE user_id = ? `, newname, userid)
+	if err != nil {
+		return user, err
+	}
+	// Update folowees table with the new username
+	_, err = db.c.Exec("UPDATE followees SET follower = ? WHERE follower = ?", newname, oldUsername)
+	if err != nil {
+		return user, err
+	}
+	_, err = db.c.Exec("UPDATE followees SET followed = ? WHERE followed = ?", newname, oldUsername)
+	if err != nil {
+		return user, err
+	}
+
+	// Update bans table with the new user name
+	_, err = db.c.Exec("UPDATE bans SET banisher = ? WHERE banisher = ?", newname, oldUsername)
+	if err != nil {
+		return user, err
+	}
+	_, err = db.c.Exec("UPDATE bans SET banished = ? WHERE banished = ?", newname, oldUsername)
+	if err != nil {
+		return user, err
+	}
+
+	// Update the likes table
+	_, err = db.c.Exec("UPDATE likes SET liker = ? WHERE liker = ?", newname, oldUsername)
+	if err != nil {
+		return user, err
+	}
+
+	// return the user with the new username
 	err = db.c.QueryRow(`SELECT * FROM users WHERE user_id = ?`, userid).Scan(&user.User_ID, &user.Username)
 	if err != nil {
 		return user, err

@@ -67,9 +67,9 @@ export default {
                     return
                 }
 
-            } catch {
-
-            }
+            } catch (e) {
+                console.error(e);
+            }   
         },
         async checkIfBanished() {
             // verify if the user with userid can is baned or not from the user with username
@@ -153,9 +153,8 @@ export default {
                 if (response.status === 201) {
                     this.banisher = true
                 } 
-            } catch {
-            
-
+            } catch (e) {
+                console.error(e);
             }
         },
         async unBanUser() {
@@ -169,8 +168,8 @@ export default {
                     this.banisher = false
                 } 
 
-            } catch {
-
+            } catch (e) {
+                console.error(e);
             }
         }, 
         async setMyUserName () {
@@ -193,8 +192,8 @@ export default {
                         this.newUsername = null
                     }
                 }
-            } catch {
-
+            } catch (e) {
+                console.error(e);
             }
         },
         async followUser() {
@@ -211,8 +210,8 @@ export default {
                 this.follower = true 
                 console.log(response.data);
                 console.log(response.status);
-                console.log("realoading page")
-                window.location.reload();
+                // console.log("realoading page")
+                // window.location.reload();
             } catch (error) {
                 // Handle errors
                 console.error(error);
@@ -227,10 +226,10 @@ export default {
                 })
                 this.follower = false
                 console.log(response.status)
-                console.log("realoading page")
-                window.location.reload();
-            } catch {
-
+                // console.log("realoading page")
+                // window.location.reload();
+            } catch (e) {
+                console.error(e);
             }
         },
         async isFollower() {
@@ -255,8 +254,8 @@ export default {
                     return
                 }
 
-            } catch {
-
+            } catch (e) {
+                console.error(e);
             }
         },
         async getFollowers () {
@@ -267,8 +266,8 @@ export default {
                     } 
                 })
                 this.followers = response.data
-            } catch {
-
+            } catch (e) {
+                console.error(e);
             }
         },
 
@@ -279,6 +278,7 @@ export default {
         
         async uploadFile(event) {
             // Handle file selection here
+            console.log(event.target.files[0])
             if (event.target.files[0]) {
                 await new Promise((resolve) => {
                 const reader = new FileReader();
@@ -326,8 +326,11 @@ export default {
                 
                 
                 this.getUserProfile();
-                console.log("realoading page")
-                window.location.reload();
+                console.log(response.data)
+                console.log(response.status)
+                console.log(response)
+                // console.log("realoading page")
+                // window.location.reload();
             } catch (error) {
                 // Handle errors
                 console.error(error);

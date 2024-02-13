@@ -58,8 +58,8 @@ export default {
                     //let response = await this.$axios.get(`/users/${this.token}/profile?username=${u}`)
                     localStorage.setItem("searchUsername", u)
                     this.$router.push(`/users/${this.token}/profile?username=${u}`)
-                } catch {
-
+                } catch (e) {
+                    console.error(e);
                 }
             }
         },
