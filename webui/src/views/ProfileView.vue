@@ -139,6 +139,7 @@ export default {
         },
         async banUser() {
             try {
+                console.log(this.searchUsername)
                 let response = await this.$axios.post(`/users/${this.token}/bans`,
                 {
                     banished: this.searchUsername

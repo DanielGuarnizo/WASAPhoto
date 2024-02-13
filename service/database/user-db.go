@@ -53,6 +53,12 @@ func (db *appdbimpl) SetUsername(newname string, userid string) (User, error) {
 		return user, err
 	}
 
+	// Update the comments table
+	_, err = db.c.Exec("UPDATE comments SET commenter = ? WHERE commenter = ?", newname, oldUsername)
+	if err != nil {
+		return user, err
+	}
+
 	// return the user with the new username
 	err = db.c.QueryRow(`SELECT * FROM users WHERE user_id = ?`, userid).Scan(&user.User_ID, &user.Username)
 	if err != nil {
