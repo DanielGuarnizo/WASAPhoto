@@ -18,15 +18,16 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 		Username string
 	}
 	var user Body
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
 		rt.baseLogger.WithError(err).Warning("Invalid JSON format")
 		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(JSONErrorMsg{Message: "Bad request body"})
 		return
 	}
 
 	// Check if the user already exists in your system
 	existingUser, err := rt.db.GetUserByName(user.Username)
-	// /rt.baseLogger.Warning(existingUser.User_ID)
 
 	// If the user doesn't exist, create a new user and return the identifier
 	if errors.Is(err, sql.ErrNoRows) {

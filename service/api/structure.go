@@ -51,11 +51,6 @@ func (c *Comment) CommentFromDataBase(comment database.Comment) {
 	c.Body = comment.Body
 }
 
-// Image represents an image of a post
-// type Image struct {
-// 	Image string `json:"image"`
-// }
-
 // Post represents a user's post on their profile
 type Post struct {
 	User_ID          string    `json:"user_id"`
@@ -163,12 +158,6 @@ func GetPhotosFromDatabase(dbPhotos []database.Post) []Post {
 
 	return apiPhotos
 }
-
-// Following structure and fucntion to pass pbjects to and from different packages
-// type FollowRequest struct {
-// 	FollowerID       string `json:"followerID"`
-// 	FollowedUsername string `json:"followedUsername"`
-// }
 
 // Ban structure
 
