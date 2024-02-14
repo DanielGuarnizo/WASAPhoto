@@ -65,6 +65,9 @@ export default {
                 this.errormsg= "before to comment a post insert a text "
             }
         },
+        goBack() {
+            this.$router.go(-1);
+        }
     },
     mounted() {
         this.getComments()
@@ -73,6 +76,23 @@ export default {
 </script>
 
 <template>
+    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <div class="position-sticky pt-3 sidebar-sticky">
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+                <span>General</span>
+            </h6>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <button @click="goBack">
+                        <!-- <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#home"/></svg> -->
+                        go back to the post
+                    </button>
+                </li>
+            </ul>
+
+    
+        </div>
+    </nav>
     <div class="input-group mb-3">
         <input type="text" id="comment" v-model="inputComment" class="form-control"
             placeholder="Insert a comment" aria-label="Recipient's username"
