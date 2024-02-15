@@ -1,8 +1,6 @@
 package database
 
 import (
-	"database/sql"
-	"errors"
 	"io/ioutil"
 )
 
@@ -123,11 +121,12 @@ func (db *appdbimpl) GetUserIDForPost(postID string) (string, error) {
 	err := db.c.QueryRow(query, postID).Scan(&User_ID)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			// No post found for the given post ID
-			return "", err
-		}
-		return "", err
+		return User_ID, err
+		// if errors.Is(err, sql.ErrNoRows) {
+		// 	// No post found for the given post ID
+		// 	return "", err
+		// }
+		// return "", err
 	}
 
 	return User_ID, nil

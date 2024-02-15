@@ -20,7 +20,7 @@ func (db *appdbimpl) GetNumberOfFollowing(username string) (int, error) {
 	var count int
 	err := db.c.QueryRow(`SELECT COUNT(*) FROM followees WHERE  follower= ?`, username).Scan(&count)
 	if err != nil {
-		return 0, err
+		return count, err
 	}
 	return count, nil
 }
@@ -29,7 +29,7 @@ func (db *appdbimpl) GetNumberOfFollowers(username string) (int, error) {
 	var count int
 	err := db.c.QueryRow(`SELECT COUNT(*) FROM followees WHERE  followed= ?`, username).Scan(&count)
 	if err != nil {
-		return 0, err
+		return count, err
 	}
 	return count, nil
 }

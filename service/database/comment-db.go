@@ -46,7 +46,6 @@ func (db *appdbimpl) GetComments(postid string) ([]Comment, error) {
 	// Check for errors from iterating over rows
 	if err := rows.Err(); err != nil {
 		return nil, err
-
 	}
 
 	return comments, nil

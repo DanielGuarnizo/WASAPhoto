@@ -6,7 +6,7 @@ func (db *appdbimpl) Validate(username string, id string) (bool, error) {
 	//  checking the exixtece of a user with the given username and userid and counting the occurences
 	err := db.c.QueryRow(`SELECT COUNT(*) FROM users WHERE user_id= ? AND username = ?`, id, username).Scan(&count)
 	if err != nil {
-		return false, err
+		return is_valid, err
 	}
 	is_valid = (count == 1)
 
